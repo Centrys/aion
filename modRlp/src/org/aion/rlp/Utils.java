@@ -65,7 +65,7 @@ public class Utils {
         return bytes;
     }
 
-    static byte[] hexEncode(byte[] in) {
+    public static byte[] hexEncode(byte[] in) {
         if (in == null) {
             return null;
         }
