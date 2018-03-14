@@ -2,56 +2,53 @@ package org.aion.trie;
 
 import com.google.common.base.Stopwatch;
 import junitparams.JUnitParamsRunner;
-import org.aion.base.util.Hex;
 import org.aion.mcf.trie.TrieImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import static org.aion.crypto.HashUtil.EMPTY_TRIE_HASH;
 
 @RunWith(JUnitParamsRunner.class)
 public class TestTrieBenchmark {
     private static final boolean BENCHMARK_ENABLED = true;
 
-    private static String ROOT_HASH_EMPTY = Hex.toHexString(EMPTY_TRIE_HASH);
-
-    private static final String SAMPLE_FILE = "samples/sample4.dat";
+    private static final int SAMPLE_LENGHT = 100000;
+    private static final int SEED = 1;
+    private Random rnd = new Random(SEED);
 
     TrieImpl trie = new TrieImpl(null);
 
-    private Map<String, String> readSampleData() {
+    protected String getRandomString() {
+        String KEYCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder key = new StringBuilder();
+
+        while (key.length() < 18) { // length of the random string.
+            int index = (int) (rnd.nextFloat() * KEYCHARS.length());
+            key.append(KEYCHARS.charAt(index));
+        }
+        String ketStr = key.toString();
+        return ketStr;
+
+    }
+
+    private Map<String, String> getSampleData(int sampleSize) {
         Map<String, String> sampleDataMap = new HashMap<>();
 
-        Path filePath = FileSystems.getDefault().getPath(SAMPLE_FILE);
-        try (Stream<String> stream = Files.lines(filePath)) {
-            stream.forEach(s -> {
-                String[] keyValue = s.split(" ");
-
-                if (keyValue.length == 2) {
-                    sampleDataMap.put(keyValue[0], keyValue[1]);
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
+        for(int i=0;i<sampleSize; i++) {
+            sampleDataMap.put(getRandomString(), getRandomString());
         }
-
         return sampleDataMap;
     }
+
 
     @Test
     public void benchmarkInsert() {
         if (BENCHMARK_ENABLED) {
-            Map<String, String> sampleDataMap = readSampleData();
+            Map<String, String> sampleDataMap = getSampleData(SAMPLE_LENGHT);
             Stopwatch stopwatch = Stopwatch.createStarted();
 
             // insert all sample elements into trie
@@ -69,7 +66,7 @@ public class TestTrieBenchmark {
     @Test
     public void benchmarkRead() {
         if (BENCHMARK_ENABLED) {
-            Map<String, String> sampleDataMap = readSampleData();
+            Map<String, String> sampleDataMap = getSampleData(SAMPLE_LENGHT);
 
             // insert all sample elements into trie
             for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
@@ -93,7 +90,7 @@ public class TestTrieBenchmark {
     @Test
     public void benchmarkUpdate() {
         if (BENCHMARK_ENABLED) {
-            Map<String, String> sampleDataMap = readSampleData();
+            Map<String, String> sampleDataMap = getSampleData(SAMPLE_LENGHT);
 
             // insert all sample elements into trie
             for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
@@ -117,10 +114,7 @@ public class TestTrieBenchmark {
     @Test
     public void benchmarkDelete() {
         if (BENCHMARK_ENABLED) {
-            Map<String, String> sampleDataMap = readSampleData();
-
-            // create a new trie object without database
-            //TrieImpl trie = new TrieImpl(null);
+            Map<String, String> sampleDataMap = getSampleData(SAMPLE_LENGHT);
 
             // insert all sample elements into trie
             for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {

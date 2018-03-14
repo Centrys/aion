@@ -1,62 +1,47 @@
 package org.aion.trie;
 
-import com.google.common.base.Stopwatch;
 import junitparams.JUnitParamsRunner;
-import org.aion.base.util.Hex;
 import org.aion.mcf.trie.doubleArrayTrie.DATImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import static org.aion.crypto.HashUtil.EMPTY_TRIE_HASH;
+import java.util.Random;
 
 @RunWith(JUnitParamsRunner.class)
 public class DoubleArrayTrieTest {
 
-    private static String ROOT_HASH_EMPTY = Hex.toHexString(EMPTY_TRIE_HASH);
-
-    private static final String SAMPLE_FILE = "samples/sample3.dat";
-
     DATImpl trie = new DATImpl(17);
+    private static final int SEED = 1;
+    private Random rnd = new Random(SEED);
 
-    private Map<String, String> readSampleData() {
+    protected String getRandomString() {
+        String KEYCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder key = new StringBuilder();
+
+        while (key.length() < 18) { // length of the random string.
+            int index = (int) (rnd.nextFloat() * KEYCHARS.length());
+            key.append(KEYCHARS.charAt(index));
+        }
+        String ketStr = key.toString();
+        return ketStr;
+
+    }
+
+    private Map<String, String> getSampleData(int sampleSize) {
         Map<String, String> sampleDataMap = new HashMap<>();
 
-        Path filePath = FileSystems.getDefault().getPath(SAMPLE_FILE);
-        try (Stream<String> stream = Files.lines(filePath)) {
-            stream.forEach(s -> {
-                String[] keyValue = s.split(" ");
-
-                if (keyValue.length == 2) {
-                    sampleDataMap.put(keyValue[0], keyValue[1]);
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
+        for(int i=0;i<sampleSize; i++) {
+            sampleDataMap.put(getRandomString(), getRandomString());
         }
-
         return sampleDataMap;
     }
 
     @Test
-    public void updateTest() {
-        Map<String, String> sampleDataMap = readSampleData();
-
-        // insert all sample elements into trie
-        for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-            trie.addToTrie(entry.getKey(), entry.getKey());
-        }
-
-        Stopwatch stopwatch = Stopwatch.createStarted();
+    public void insertTest(){
+        Map<String, String> sampleDataMap = getSampleData(2);
 
         // update all sample elements in trie
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
@@ -64,12 +49,43 @@ public class DoubleArrayTrieTest {
         }
 
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-            Assert.assertEquals(entry.getValue(), new String(trie.containsPrefix(entry.getKey().getBytes())));
+            Assert.assertEquals(entry.getValue(), new String(trie.get(entry.getKey().getBytes())));
+        }
+    }
+
+    @Test
+    public void updateTest() {
+        Map<String, String> sampleDataMap = getSampleData(2);
+
+        // insert all sample elements into trie
+        for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
+            trie.addToTrie(entry.getKey(), entry.getKey());
         }
 
-        stopwatch.stop();
+        // update all sample elements in trie
+        for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
+            trie.addToTrie(entry.getKey(), entry.getValue());
+        }
 
-        long millis = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        System.out.println("Update duration: " + millis + "ms");
+        for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
+            Assert.assertEquals(entry.getValue(), new String(trie.get(entry.getKey().getBytes())));
+        }
+    }
+
+    @Test
+    public void deleteTest() {
+        Map<String, String> sampleDataMap = getSampleData(2);
+
+        for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
+            trie.addToTrie(entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
+            trie.addToTrie(entry.getKey(), "");
+        }
+
+        for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
+            Assert.assertEquals("", new String(trie.get(entry.getKey().getBytes())));
+        }
     }
 }
