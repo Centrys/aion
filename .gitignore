@@ -1,8 +1,8 @@
 # aion
-config/
-database/
-keystore/
-pack/
+config
+database
+keystore
+pack
 
 # ide
 .idea/
