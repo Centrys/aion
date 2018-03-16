@@ -11,7 +11,9 @@ module aion.apiserver {
     requires aion.evtmgr.impl;
     requires aion.fastvm;
 
+    exports org.aion.api.server;
     exports org.aion.api.server.pb;
     exports org.aion.api.server.http;
+    exports org.aion.api.server.types;
     exports org.aion.api.server.zmq;
 }

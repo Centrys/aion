@@ -25,6 +25,7 @@
 
 package org.aion;
 
+import javafx.application.Application;
 import org.aion.api.server.http.NanoServer;
 import org.aion.api.server.pb.ApiAion0;
 import org.aion.api.server.pb.IHdlr;
@@ -37,6 +38,7 @@ import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
 import org.aion.mcf.config.CfgApiRpc;
 import org.aion.mcf.mine.IMineRunner;
+import org.aion.wallet.ui.MainWindow;
 import org.aion.zero.impl.blockchain.AionFactory;
 import org.aion.zero.impl.blockchain.IAionChain;
 import org.aion.zero.impl.cli.Cli;
@@ -114,9 +116,7 @@ public class Aion {
             IHdlr handler = new HdlrZmq(new ApiAion0(ac));
             processor = new ProtocolProcessor(handler, cfg.getApi().getZmq());
             ProtocolProcessor finalProcessor = processor;
-            zmqThread = new Thread(() -> {
-                finalProcessor.run();
-            }, "zmq-api");
+            zmqThread = new Thread(finalProcessor, "zmq-api");
             zmqThread.start();
         }
 
@@ -188,5 +188,7 @@ public class Aion {
             LOG.info("---------------------------------------------");
 
         }, "shutdown"));
+
+        Application.launch(MainWindow.class, args);
     }
 }

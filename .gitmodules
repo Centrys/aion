@@ -4,3 +4,6 @@
 [submodule "aion_api"]
 	path = aion_api
 	url = https://github.com/aionnetwork/aion_api
+[submodule "aion_ui"]
+	path = aion_ui
+	url = git@github.com:centrys/aion_ui.git

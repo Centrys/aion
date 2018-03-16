@@ -1,7 +1,7 @@
 # aion
-/config/
-/database/
-/keystore/
+/config
+/database
+/keystore
 /pack/
 /reports/
 /cache/
