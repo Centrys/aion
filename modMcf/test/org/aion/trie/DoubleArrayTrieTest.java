@@ -14,7 +14,7 @@ import java.util.Random;
 @RunWith(JUnitParamsRunner.class)
 public class DoubleArrayTrieTest {
 
-    DoubleArrayTrieImpl trie = new DoubleArrayTrieImpl(17);
+    DoubleArrayTrieImpl trie = new DoubleArrayTrieImpl();
     private static final int SEED = 1;
     private Random rnd = new Random(SEED);
 
@@ -58,7 +58,7 @@ public class DoubleArrayTrieTest {
         }
 
         byte[] firstRoothash = trie.getRootHash();
-        DoubleArrayTrieImpl trie2 = new DoubleArrayTrieImpl(17);
+        DoubleArrayTrieImpl trie2 = new DoubleArrayTrieImpl();
 
         for(Map.Entry<String, String> entry : data.entrySet()){
             trie2.update(entry.getKey().getBytes(), entry.getValue().getBytes());

@@ -15,6 +15,7 @@ public class DoubleArrayTrieImpl implements Trie {
     private static final int ROOT_CHECK_VALUE = -3; // The root check value, normally unnecessary
     private static final int EMPTY_VALUE = -1;      // The unoccupied spot value
     private static final int INITIAL_ROOT_BASE = 1; // The initial offset.
+    public static final int ALPHABET_SIZE = 17;
 
     private IntegerArrayList base;                       // The base array.
     private IntegerArrayList check;                      // The check array.
@@ -23,30 +24,22 @@ public class DoubleArrayTrieImpl implements Trie {
     private Map<Integer, byte[]> cache = new HashMap<>();       // Values of the leaf nodes
     private Map<Integer, Object> hashCache = new HashMap<>();   // Hash of the nodes
 
-    private final int alphabetLength;               // The alphabet length
-
     /**
      * Constructs a DoubleArrayTrie for the given alphabet length.
      * Uses a default IntegerArrayList for storage.
-     *
-     * @param alphabetLength The size of the set of values that
-     * 				are to be stored.
      */
-    public DoubleArrayTrieImpl(int alphabetLength) {
-        this(alphabetLength, IntegerArrayListFactory.newInstance());
+    public DoubleArrayTrieImpl() {
+        this(IntegerArrayListFactory.newInstance());
     }
 
     /**
      * Constructs a DoubleArrayTrie for the given alphabet length that
      * uses the provided IntegerListFactory for creating the storage.
      *
-     * @param alphabetLength The size of the set of values that
-     * 				are to be stored.
      * @param listFactory The IntegerListFactory to use for creating
      * 				the storage.
      */
-    private DoubleArrayTrieImpl(int alphabetLength, IntegerArrayListFactory listFactory) {
-        this.alphabetLength = alphabetLength;
+    private DoubleArrayTrieImpl(IntegerArrayListFactory listFactory) {
         init(listFactory);
     }
 
@@ -73,7 +66,7 @@ public class DoubleArrayTrieImpl implements Trie {
         while (i < keyNibbles.length) {
             current = keyNibbles[i];
             assert current >= 0;
-            assert current < alphabetLength;
+            assert current < ALPHABET_SIZE;
             transition = getBase(state) + current;	// Get next candidate state
             if (transition < getSize() && getCheck(transition) == state) {	// If it is valid...
                 if (getBase(transition) == LEAF_BASE_VALUE) {
@@ -218,12 +211,12 @@ public class DoubleArrayTrieImpl implements Trie {
         do {
             //get the parent of this node
             int parentState   = getCheck(currentTransition);
-            Object[] childHashes = emptyStringSlice(17);
+            Object[] childHashes = emptyStringSlice(ALPHABET_SIZE);
 
             int numberOfChilds = 0;
             int lastChildIndex = -1;
             //get all he children from this node
-            for (int c = 0; c < alphabetLength; c++) {
+            for (int c = 0; c < ALPHABET_SIZE; c++) {
                 int tempNext = getBase(parentState) + c;
                 if (tempNext < getSize() && getCheck(tempNext) == parentState) {
                     if (hashCache.get(tempNext) != null) {
@@ -280,7 +273,7 @@ public class DoubleArrayTrieImpl implements Trie {
         values.add(newValue);
 
         // Find all existing children and add them too.
-        for (int c = 0; c < alphabetLength; c++) {
+        for (int c = 0; c < ALPHABET_SIZE; c++) {
             int tempNext = getBase(s) + c;
             if (tempNext < getSize() && getCheck(tempNext) == s)
                 values.add(c);
@@ -335,7 +328,7 @@ public class DoubleArrayTrieImpl implements Trie {
              */
             if (getBase(getBase(s) + c) != LEAF_BASE_VALUE) {
                 // First, iterate over all possible children of c
-                for (int d = 0; d < alphabetLength; d++) {
+                for (int d = 0; d < ALPHABET_SIZE; d++) {
                     /*
                      *  Get the child. This could well be beyond the store size
                      *  since we don't know how many children c has.

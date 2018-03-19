@@ -17,7 +17,7 @@ public class MerkleTrieImplTests {
     private Random rnd = new Random(SEED);
 
     MerkleTrieImpl merkleTrie = new MerkleTrieImpl(null);
-    DoubleArrayTrieImpl datTrie = new DoubleArrayTrieImpl(17);
+    DoubleArrayTrieImpl datTrie = new DoubleArrayTrieImpl();
 
 
     protected String getRandomString() {

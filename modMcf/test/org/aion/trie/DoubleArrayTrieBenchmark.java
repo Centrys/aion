@@ -21,7 +21,7 @@ public class DoubleArrayTrieBenchmark {
     private static final int SEED = 1;
     private Random rnd = new Random(SEED);
 
-    DoubleArrayTrieImpl trie = new DoubleArrayTrieImpl(17);
+    DoubleArrayTrieImpl trie = new DoubleArrayTrieImpl();
 
     protected String getRandomString() {
         String KEYCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";

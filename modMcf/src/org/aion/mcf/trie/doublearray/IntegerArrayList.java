@@ -18,25 +18,6 @@ public class IntegerArrayList {
     private int size;
 
     /**
-     * Constructs an empty list with an default capacity
-     */
-    public IntegerArrayList() {
-        this(16);
-    }
-
-    /**
-     * Constructs an empty list with the specified initial capacity.
-     *
-     * @param initialCapacity
-     *            the initial capacity of the list
-     * @exception IllegalArgumentException
-     *                if the specified initial capacity is negative
-     */
-    public IntegerArrayList(int initialCapacity) {
-        this(initialCapacity, 1, 1, 1000);
-    }
-
-    /**
      * Package protected constructor for use by factories. Besides the initial capacity,
      * this constructor allows for specifying the growth characteristics.
      * Whenever an increase of the storing array is needed, its new size is calculated as
@@ -146,7 +127,7 @@ public class IntegerArrayList {
             int e = get(i);
             sb.append(e);
             if (i == size() - 1)
-                sb.append(']').toString();
+                sb.append(']');
             sb.append(", ");
         }
         return sb.toString();
