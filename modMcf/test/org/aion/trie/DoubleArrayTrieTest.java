@@ -1,7 +1,7 @@
 package org.aion.trie;
 
 import junitparams.JUnitParamsRunner;
-import org.aion.mcf.trie.doublearray.DATImpl;
+import org.aion.mcf.trie.doublearray.DoubleArrayTrieImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +14,7 @@ import java.util.Random;
 @RunWith(JUnitParamsRunner.class)
 public class DoubleArrayTrieTest {
 
-    DATImpl trie = new DATImpl(17);
+    DoubleArrayTrieImpl trie = new DoubleArrayTrieImpl(17);
     private static final int SEED = 1;
     private Random rnd = new Random(SEED);
 
@@ -58,7 +58,7 @@ public class DoubleArrayTrieTest {
         }
 
         byte[] firstRoothash = trie.getRootHash();
-        DATImpl trie2 = new DATImpl(17);
+        DoubleArrayTrieImpl trie2 = new DoubleArrayTrieImpl(17);
 
         for(Map.Entry<String, String> entry : data.entrySet()){
             trie2.update(entry.getKey().getBytes(), entry.getValue().getBytes());

@@ -2,7 +2,7 @@ package org.aion.trie;
 
 import com.google.common.base.Stopwatch;
 import junitparams.JUnitParamsRunner;
-import org.aion.mcf.trie.doublearray.DATImpl;
+import org.aion.mcf.trie.doublearray.DoubleArrayTrieImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +21,7 @@ public class DoubleArrayTrieBenchmark {
     private static final int SEED = 1;
     private Random rnd = new Random(SEED);
 
-    DATImpl trie = new DATImpl(17);
+    DoubleArrayTrieImpl trie = new DoubleArrayTrieImpl(17);
 
     protected String getRandomString() {
         String KEYCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";

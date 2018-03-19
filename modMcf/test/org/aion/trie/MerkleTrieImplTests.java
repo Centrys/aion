@@ -2,7 +2,7 @@ package org.aion.trie;
 
 import junitparams.JUnitParamsRunner;
 import org.aion.mcf.trie.merkle.MerkleTrieImpl;
-import org.aion.mcf.trie.doublearray.DATImpl;
+import org.aion.mcf.trie.doublearray.DoubleArrayTrieImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -17,7 +17,7 @@ public class MerkleTrieImplTests {
     private Random rnd = new Random(SEED);
 
     MerkleTrieImpl merkleTrie = new MerkleTrieImpl(null);
-    DATImpl datTrie = new DATImpl(17);
+    DoubleArrayTrieImpl datTrie = new DoubleArrayTrieImpl(17);
 
 
     protected String getRandomString() {

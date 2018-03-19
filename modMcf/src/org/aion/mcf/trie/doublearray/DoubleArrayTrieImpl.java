@@ -10,7 +10,7 @@ import static org.aion.crypto.HashUtil.EMPTY_TRIE_HASH;
 import static org.aion.rlp.CompactEncoder.binToNibbles;
 import static org.aion.rlp.CompactEncoder.packNibbles;
 
-public class DATImpl implements Trie {
+public class DoubleArrayTrieImpl implements Trie {
     private static final int LEAF_BASE_VALUE = -2;  // The leaf base value
     private static final int ROOT_CHECK_VALUE = -3; // The root check value, normally unnecessary
     private static final int EMPTY_VALUE = -1;      // The unoccupied spot value
@@ -32,7 +32,7 @@ public class DATImpl implements Trie {
      * @param alphabetLength The size of the set of values that
      * 				are to be stored.
      */
-    public DATImpl(int alphabetLength) {
+    public DoubleArrayTrieImpl(int alphabetLength) {
         this(alphabetLength, IntegerArrayListFactory.newInstance());
     }
 
@@ -45,7 +45,7 @@ public class DATImpl implements Trie {
      * @param listFactory The IntegerListFactory to use for creating
      * 				the storage.
      */
-    private DATImpl(int alphabetLength, IntegerListFactory listFactory) {
+    private DoubleArrayTrieImpl(int alphabetLength, IntegerListFactory listFactory) {
         this.alphabetLength = alphabetLength;
         init(listFactory);
     }
