@@ -40,6 +40,31 @@ public class DoubleArrayTrieTest {
     }
 
     @Test
+    public void checkDeterministicRoot(){
+        // for the same input the root should be the same
+    }
+
+    @Test
+    public void checkHashPropagation(){
+        // check that for a given n numbers of key value pairs when we insert a new pair the hash propagates up to the root
+    }
+
+    @Test
+    public void checkUpdatePropagatesRootHashChanges(){
+        // update an existing value and check that the changes propagate to the root
+    }
+
+    @Test
+    public void checkDeleteRootHashPropagation(){
+        // delete an existing node and make sure that the changes propagate up to the root
+    }
+    
+    @Test
+    public void checkDeleteRootHashCorrectness(){
+        // add two nodes delete one, check that the root matches when we only had one node.
+    }
+
+    @Test
     public void insertTest(){
         Map<String, String> sampleDataMap = getSampleData(2);
 
