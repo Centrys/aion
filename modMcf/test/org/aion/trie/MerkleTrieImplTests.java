@@ -1,11 +1,8 @@
 package org.aion.trie;
 
-import com.google.common.base.Stopwatch;
 import junitparams.JUnitParamsRunner;
-import org.aion.crypto.HashUtil;
-import org.aion.mcf.trie.TrieImpl;
-import org.aion.mcf.trie.doubleArrayTrie.DATImpl;
-import org.junit.Assert;
+import org.aion.mcf.trie.merkle.MerkleTrieImpl;
+import org.aion.mcf.trie.doublearray.DATImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,11 +12,11 @@ import java.util.Map;
 import java.util.Random;
 
 @RunWith(JUnitParamsRunner.class)
-public class TrieImplTests {
+public class MerkleTrieImplTests {
     private static final int SEED = 1;
     private Random rnd = new Random(SEED);
 
-    TrieImpl merkleTrie = new TrieImpl(null);
+    MerkleTrieImpl merkleTrie = new MerkleTrieImpl(null);
     DATImpl datTrie = new DATImpl(17);
 
 
@@ -45,7 +42,7 @@ public class TrieImplTests {
         // insert all sample elements into trie
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
             merkleTrie.update(entry.getKey(), entry.getValue());
-            datTrie.addToTrie(entry.getKey(), entry.getValue());
+            datTrie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         byte[] hash1 = merkleTrie.getRootHash();

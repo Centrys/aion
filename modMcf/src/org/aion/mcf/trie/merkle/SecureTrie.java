@@ -32,27 +32,44 @@
  *     Zcash project team.
  *     Bitcoinj team.
  ******************************************************************************/
-package org.aion.mcf.trie;
+package org.aion.mcf.trie.merkle;
 
-import java.util.HashSet;
-import java.util.Set;
+import static org.aion.base.util.ByteUtil.EMPTY_BYTE_ARRAY;
+import static org.aion.crypto.HashUtil.h256;
 
-import org.aion.base.util.ByteArrayWrapper;
-import org.aion.rlp.Value;
+import org.aion.base.db.IByteArrayKeyValueStore;
+import org.aion.mcf.trie.Trie;
 
-/**
- *
- *
- */
-public class CollectFullSetOfNodes implements TrieImpl.ScanAction {
-    Set<ByteArrayWrapper> nodes = new HashSet<>();
+public class SecureTrie extends MerkleTrieImpl implements Trie {
 
-    @Override
-    public void doOnNode(byte[] hash, Value node) {
-        nodes.add(new ByteArrayWrapper(hash));
+    public SecureTrie(IByteArrayKeyValueStore db) {
+        this(db, "");
     }
 
-    public Set<ByteArrayWrapper> getCollectedHashes() {
-        return nodes;
+    public SecureTrie(IByteArrayKeyValueStore db, Object root) {
+        super(db, root);
+    }
+
+    @Override
+    public byte[] get(byte[] key) {
+        return super.get(h256(key));
+    }
+
+    @Override
+    public void update(byte[] key, byte[] value) {
+        super.update(h256(key), value);
+    }
+
+    @Override
+    public void delete(byte[] key) {
+        this.update(key, EMPTY_BYTE_ARRAY);
+    }
+
+    @Override
+    public SecureTrie clone() {
+        this.getCache();
+        this.getRoot();
+
+        return null;
     }
 }

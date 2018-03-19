@@ -32,7 +32,7 @@ import org.aion.mcf.core.AccountState;
 import org.aion.mcf.db.AbstractRepository;
 import org.aion.mcf.db.ContractDetailsCacheImpl;
 import org.aion.mcf.db.TransactionStore;
-import org.aion.mcf.trie.SecureTrie;
+import org.aion.mcf.trie.merkle.SecureTrie;
 import org.aion.mcf.trie.Trie;
 import org.aion.zero.db.AionRepositoryCache;
 import org.aion.zero.impl.config.CfgAion;

@@ -32,12 +32,13 @@
  *     Zcash project team.
  *     Bitcoinj team.
  ******************************************************************************/
-package org.aion.mcf.trie;
+package org.aion.mcf.trie.merkle;
 
 import static org.aion.rlp.CompactEncoder.unpackToNibbles;
 
 import java.util.List;
 
+import org.aion.mcf.trie.merkle.MerkleTrieImpl;
 import org.aion.rlp.Value;
 
 /*
@@ -46,12 +47,12 @@ import org.aion.rlp.Value;
  */
 public class TrieIterator {
 
-    private TrieImpl trie;
+    private MerkleTrieImpl trie;
 
     private List<byte[]> shas;
     private List<String> values;
 
-    public TrieIterator(TrieImpl t) {
+    public TrieIterator(MerkleTrieImpl t) {
         this.trie = t;
     }
 

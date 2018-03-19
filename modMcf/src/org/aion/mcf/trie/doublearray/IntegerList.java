@@ -1,4 +1,4 @@
-package org.aion.mcf.trie.doubleArrayTrie;
+package org.aion.mcf.trie.doublearray;
 
 public interface IntegerList {
 

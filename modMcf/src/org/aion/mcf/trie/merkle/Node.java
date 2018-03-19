@@ -32,7 +32,7 @@
  *     Zcash project team.
  *     Bitcoinj team.
  ******************************************************************************/
-package org.aion.mcf.trie;
+package org.aion.mcf.trie.merkle;
 
 import org.aion.rlp.Value;
 

@@ -32,7 +32,7 @@
  *     Zcash project team.
  *     Bitcoinj team.
  ******************************************************************************/
-package org.aion.mcf.trie;
+package org.aion.mcf.trie.merkle;
 
 import static org.aion.base.util.ByteArrayWrapper.wrap;
 import static org.aion.rlp.Value.fromRlpEncoded;
@@ -50,6 +50,7 @@ import org.aion.base.util.ByteArrayWrapper;
 import org.aion.crypto.HashUtil;
 import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
+import org.aion.mcf.trie.merkle.Node;
 import org.aion.rlp.Value;
 import org.slf4j.Logger;
 

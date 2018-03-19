@@ -33,7 +33,7 @@ import org.aion.zero.db.AionContractDetailsImpl;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.types.A0BlockHeader;
 import org.aion.mcf.vm.types.DataWord;
-import org.aion.mcf.trie.SecureTrie;
+import org.aion.mcf.trie.merkle.SecureTrie;
 import org.aion.mcf.trie.Trie;
 import org.aion.mcf.types.AbstractBlockHeader;
 

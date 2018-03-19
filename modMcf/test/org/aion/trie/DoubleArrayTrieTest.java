@@ -1,7 +1,7 @@
 package org.aion.trie;
 
 import junitparams.JUnitParamsRunner;
-import org.aion.mcf.trie.doubleArrayTrie.DATImpl;
+import org.aion.mcf.trie.doublearray.DATImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,14 +54,14 @@ public class DoubleArrayTrieTest {
         Map<String, String> data = getStaticSampleData();
 
         for(Map.Entry<String, String> entry : data.entrySet()){
-            trie.addToTrie(entry.getKey(), entry.getValue());
+            trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         byte[] firstRoothash = trie.getRootHash();
         DATImpl trie2 = new DATImpl(17);
 
         for(Map.Entry<String, String> entry : data.entrySet()){
-            trie2.addToTrie(entry.getKey(), entry.getValue());
+            trie2.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         byte[] secondRootHash = trie2.getRootHash();
@@ -73,13 +73,13 @@ public class DoubleArrayTrieTest {
     public void checkHashPropagation(){
 
         for(Map.Entry<String, String> entry : getSampleData(10).entrySet()){
-            trie.addToTrie(entry.getKey(), entry.getValue());
+            trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         byte[] rootHashIntermediary = trie.getRootHash();
 
         for(Map.Entry<String, String> entry : getStaticSampleData().entrySet()){
-            trie.addToTrie(entry.getKey(), entry.getValue());
+            trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         byte[] rootHashFinal = trie.getRootHash();
@@ -91,12 +91,12 @@ public class DoubleArrayTrieTest {
     @Test
     public void checkUpdatePropagatesRootHashChanges(){
         for(Map.Entry<String, String> entry : getStaticSampleData().entrySet()){
-            trie.addToTrie(entry.getKey(), entry.getValue());
+            trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         byte[] tempRootHash = trie.getRootHash();
 
-        trie.addToTrie("key1", "value1New");
+        trie.update("key1".getBytes(), "value1New".getBytes());
 
         byte[] newRootHash = trie.getRootHash();
 
@@ -107,12 +107,12 @@ public class DoubleArrayTrieTest {
     @Test
     public void checkDeleteRootHashPropagation(){
         for(Map.Entry<String, String> entry : getStaticSampleData().entrySet()){
-            trie.addToTrie(entry.getKey(), entry.getValue());
+            trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         byte[] tempRootHash = trie.getRootHash();
 
-        trie.addToTrie("key1", "");
+        trie.update("key1".getBytes(), "".getBytes());
 
         byte[] newRootHash = trie.getRootHash();
 
@@ -121,10 +121,10 @@ public class DoubleArrayTrieTest {
 
     @Test
     public void checkDeleteRootHashCorrectness(){
-        trie.addToTrie("key1", "value1");
+        trie.update("key1".getBytes(), "value1".getBytes());
         byte[] tempRootHash = trie.getRootHash();
-        trie.addToTrie("key2", "value2");
-        trie.addToTrie("key2", "");
+        trie.update("key2".getBytes(), "value2".getBytes());
+        trie.update("key2".getBytes(), "".getBytes());
         byte[] newRootHash = trie.getRootHash();
 
         Assert.assertEquals(true, Arrays.equals(tempRootHash, newRootHash));
@@ -138,7 +138,7 @@ public class DoubleArrayTrieTest {
 
         // update all sample elements in trie
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-            trie.addToTrie(entry.getKey(), entry.getValue());
+            trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
@@ -152,12 +152,12 @@ public class DoubleArrayTrieTest {
 
         // insert all sample elements into trie
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-            trie.addToTrie(entry.getKey(), entry.getKey());
+            trie.update(entry.getKey().getBytes(), entry.getKey().getBytes());
         }
 
         // update all sample elements in trie
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-            trie.addToTrie(entry.getKey(), entry.getValue());
+            trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
@@ -170,11 +170,11 @@ public class DoubleArrayTrieTest {
         Map<String, String> sampleDataMap = getSampleData(2);
 
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-            trie.addToTrie(entry.getKey(), entry.getValue());
+            trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
         }
 
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-            trie.addToTrie(entry.getKey(), "");
+            trie.update(entry.getKey().getBytes(), "".getBytes());
         }
 
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {

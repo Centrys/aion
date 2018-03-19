@@ -41,7 +41,7 @@ import org.aion.zero.types.A0BlockHeader;
 import org.aion.zero.types.AionTransaction;
 import org.aion.zero.types.IAionBlock;
 import org.aion.mcf.trie.Trie;
-import org.aion.mcf.trie.TrieImpl;
+import org.aion.mcf.trie.merkle.MerkleTrieImpl;
 import org.aion.mcf.types.AbstractBlock;
 import org.slf4j.Logger;
 
@@ -321,7 +321,7 @@ public class AionBlock extends AbstractBlock<A0BlockHeader, AionTransaction> imp
 
     private void parseTxs(RLPList txTransactions) {
 
-        this.txsState = new TrieImpl(null);
+        this.txsState = new MerkleTrieImpl(null);
         for (int i = 0; i < txTransactions.size(); i++) {
             RLPElement transactionRaw = txTransactions.get(i);
             this.transactionsList.add(new AionTransaction(transactionRaw.getRLPData()));

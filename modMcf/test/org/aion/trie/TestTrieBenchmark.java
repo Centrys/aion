@@ -2,7 +2,7 @@ package org.aion.trie;
 
 import com.google.common.base.Stopwatch;
 import junitparams.JUnitParamsRunner;
-import org.aion.mcf.trie.TrieImpl;
+import org.aion.mcf.trie.merkle.MerkleTrieImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +20,7 @@ public class TestTrieBenchmark {
     private static final int SEED = 1;
     private Random rnd = new Random(SEED);
 
-    TrieImpl trie = new TrieImpl(null);
+    MerkleTrieImpl trie = new MerkleTrieImpl(null);
 
     protected String getRandomString() {
         String KEYCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";

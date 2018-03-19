@@ -43,7 +43,7 @@ import org.aion.rlp.RLP;
 import org.aion.rlp.RLPElement;
 import org.aion.rlp.RLPItem;
 import org.aion.rlp.RLPList;
-import org.aion.mcf.trie.SecureTrie;
+import org.aion.mcf.trie.merkle.SecureTrie;
 
 public class AionContractDetailsImpl extends AbstractContractDetails<DataWord> {
 

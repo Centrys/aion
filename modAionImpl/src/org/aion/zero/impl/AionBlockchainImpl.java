@@ -43,7 +43,7 @@ import org.aion.mcf.db.IBlockStorePow;
 import org.aion.mcf.db.TransactionStore;
 import org.aion.mcf.manager.ChainStatistics;
 import org.aion.mcf.trie.Trie;
-import org.aion.mcf.trie.TrieImpl;
+import org.aion.mcf.trie.merkle.MerkleTrieImpl;
 import org.aion.mcf.types.BlockIdentifier;
 import org.aion.mcf.valid.BlockHeaderValidator;
 import org.aion.mcf.valid.DependentBlockHeaderRule;
@@ -365,7 +365,7 @@ public class AionBlockchainImpl implements IAionBlockchain {
 
     public static byte[] calcTxTrie(List<AionTransaction> transactions) {
 
-        Trie txsState = new TrieImpl(null);
+        Trie txsState = new MerkleTrieImpl(null);
 
         if (transactions == null || transactions.isEmpty()) {
             return HashUtil.EMPTY_TRIE_HASH;
@@ -716,7 +716,7 @@ public class AionBlockchainImpl implements IAionBlockchain {
     }
 
     protected static byte[] calcReceiptsTrie(List<AionTxReceipt> receipts) {
-        Trie receiptsTrie = new TrieImpl(null);
+        Trie receiptsTrie = new MerkleTrieImpl(null);
 
         if (receipts == null || receipts.isEmpty()) {
             return HashUtil.EMPTY_TRIE_HASH;

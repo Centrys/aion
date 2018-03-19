@@ -33,7 +33,7 @@ import org.aion.base.db.IContractDetails;
 import org.aion.base.type.Address;
 import org.aion.mcf.vm.types.DataWord;
 import org.aion.rlp.RLP;
-import org.aion.mcf.trie.SecureTrie;
+import org.aion.mcf.trie.merkle.SecureTrie;
 
 /**
  * Contract details cache implementation.

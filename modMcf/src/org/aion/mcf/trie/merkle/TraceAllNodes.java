@@ -32,12 +32,13 @@
  *     Zcash project team.
  *     Bitcoinj team.
  ******************************************************************************/
-package org.aion.mcf.trie;
+package org.aion.mcf.trie.merkle;
 
 import org.aion.base.util.Hex;
+import org.aion.mcf.trie.merkle.MerkleTrieImpl;
 import org.aion.rlp.Value;
 
-public class TraceAllNodes implements TrieImpl.ScanAction {
+public class TraceAllNodes implements MerkleTrieImpl.ScanAction {
 
     StringBuilder output = new StringBuilder();
 

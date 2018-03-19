@@ -4,7 +4,7 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.aion.crypto.HashUtil;
 import org.aion.db.impl.mockdb.MockDB;
-import org.aion.mcf.trie.TrieImpl;
+import org.aion.mcf.trie.merkle.MerkleTrieImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -114,9 +114,9 @@ public class TrieTest {
     }
 
     /**
-     * Tests correct retrieval using {@link TrieImpl#get(String)} after an
-     * initial insert with {@link TrieImpl#update(String, String)} and after a
-     * sequential update using {@link TrieImpl#update(String, String)}. Uses
+     * Tests correct retrieval using {@link MerkleTrieImpl#get(String)} after an
+     * initial insert with {@link MerkleTrieImpl#update(String, String)} and after a
+     * sequential update using {@link MerkleTrieImpl#update(String, String)}. Uses
      * diverse combinations of keys and values from
      * {@link #keyValue1Value2Parameters()}.
      */
@@ -124,7 +124,7 @@ public class TrieTest {
     @Parameters(method = "keyValue1Value2Parameters")
     public void testInsertUpdateDeleteGet(String key, String value1, String value2) {
         // create a new trie object without database
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
 
         // -------------------------------------------------------------------------------------------------------------
         // insert (key,value1) pair into the trie
@@ -153,7 +153,7 @@ public class TrieTest {
     @Parameters(method = "keyValue1Value2Parameters")
     public void testRollbackToRootScenarios(String key, String value1, String value2) {
         // create a new trie object with mock database
-        TrieImpl trie = new TrieImpl(new MockDB("TestKnownRoot"));
+        MerkleTrieImpl trie = new MerkleTrieImpl(new MockDB("TestKnownRoot"));
 
         // -------------------------------------------------------------------------------------------------------------
         // insert (key,value1) pair into the trie
@@ -248,7 +248,7 @@ public class TrieTest {
 
         if (print) { System.out.println("Number of pairs = " + pairs.size()); }
 
-        TrieImpl trie = new TrieImpl(new MockDB("TestInsertRandomMultipleItems"));
+        MerkleTrieImpl trie = new MerkleTrieImpl(new MockDB("TestInsertRandomMultipleItems"));
         String key, value;
 
         for (Map.Entry<String, String> entry : pairs.entrySet()) {
@@ -283,7 +283,7 @@ public class TrieTest {
 
         if (print) { System.out.println("Number of pairs = " + pairs.size()); }
 
-        TrieImpl trie = new TrieImpl(new MockDB("TestDeleteAll"));
+        MerkleTrieImpl trie = new MerkleTrieImpl(new MockDB("TestDeleteAll"));
 
         // empty at start
         assertThat(Hex.toHexString(trie.getRootHash())).isEqualTo(ROOT_HASH_EMPTY);
@@ -321,8 +321,8 @@ public class TrieTest {
         if (print) { System.out.println("Number of pairs = " + pairs.size()); }
 
         // create a new trie object without database
-        TrieImpl trie1 = new TrieImpl(null);
-        TrieImpl trie2 = new TrieImpl(null);
+        MerkleTrieImpl trie1 = new MerkleTrieImpl(null);
+        MerkleTrieImpl trie2 = new MerkleTrieImpl(null);
 
         String key, value;
 
@@ -376,7 +376,7 @@ public class TrieTest {
 
     @Test
     public void TestTrieReset() {
-        TrieImpl trie = new TrieImpl(new MockDB("TestTrieReset"));
+        MerkleTrieImpl trie = new MerkleTrieImpl(new MockDB("TestTrieReset"));
 
         trie.update(cat, LONG_STRING);
         assertNotEquals("Expected cached nodes", 0, trie.getCache().getNodes().size());
@@ -388,7 +388,7 @@ public class TrieTest {
 
     @Test
     public void testDeleteCompletellyDiferentItems() {
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
 
         String val_1 = "1000000000000000000000000000000000000000000000000000000000000000";
         String val_2 = "2000000000000000000000000000000000000000000000000000000000000000";
@@ -414,7 +414,7 @@ public class TrieTest {
             List<String> randomWords = Arrays.asList(randomValues);
             HashMap<String, String> testerMap = new HashMap<>();
 
-            TrieImpl trie = new TrieImpl(null);
+            MerkleTrieImpl trie = new MerkleTrieImpl(null);
             Random generator = new Random();
 
             // Random insertion
@@ -455,7 +455,7 @@ public class TrieTest {
 
     @Test
     public void testMassiveDelete() {
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
         byte[] rootHash1 = null;
         for (int i = 0; i < 11000; i++) {
             trie.update(HashUtil.h256(intToBytes(i)), HashUtil.h256(intToBytes(i + 1000000)));
@@ -473,9 +473,9 @@ public class TrieTest {
 
     @Test
     public void testTrieCopy() {
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
         trie.update("doe", "reindeer");
-        TrieImpl trie2 = trie.copy();
+        MerkleTrieImpl trie2 = trie.copy();
         assertNotEquals(trie.hashCode(), trie2.hashCode()); // avoid possibility that its just a reference copy
         assertEquals(Hex.toHexString(trie.getRootHash()), Hex.toHexString(trie2.getRootHash()));
         assertTrue(trie.equals(trie2));

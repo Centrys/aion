@@ -2,7 +2,7 @@ package org.aion.trie;
 
 import com.google.common.base.Stopwatch;
 import junitparams.JUnitParamsRunner;
-import org.aion.mcf.trie.doubleArrayTrie.DATImpl;
+import org.aion.mcf.trie.doublearray.DATImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +53,7 @@ public class DoubleArrayTrieBenchmark {
 
             // insert all sample elements into trie
             for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-                trie.addToTrie(entry.getKey(), entry.getValue());
+                trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
             }
 
             stopwatch.stop();
@@ -70,7 +70,7 @@ public class DoubleArrayTrieBenchmark {
 
             // insert all sample elements into trie
             for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-                trie.addToTrie(entry.getKey(), entry.getValue());
+                trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
             }
 
             Stopwatch stopwatch = Stopwatch.createStarted();
@@ -94,14 +94,14 @@ public class DoubleArrayTrieBenchmark {
 
             // insert all sample elements into trie
             for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-                trie.addToTrie(entry.getKey(), entry.getKey());
+                trie.update(entry.getKey().getBytes(), entry.getKey().getBytes());
             }
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
             // update all sample elements in trie
             for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-                trie.addToTrie(entry.getKey(), entry.getValue());
+                trie.update(entry.getKey().getBytes(), entry.getValue().getBytes());
             }
 
             stopwatch.stop();
@@ -117,18 +117,18 @@ public class DoubleArrayTrieBenchmark {
             Map<String, String> sampleDataMap = getSampleData(SAMPLE_LENGHT);
 
             // create a new trie object without database
-            //TrieImpl trie = new TrieImpl(null);
+            //MerkleTrieImpl trie = new MerkleTrieImpl(null);
 
             // insert all sample elements into trie
             for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-                trie.addToTrie(entry.getKey(), entry.getKey());
+                trie.update(entry.getKey().getBytes(), entry.getKey().getBytes());
             }
 
             Stopwatch stopwatch = Stopwatch.createStarted();
 
             // update all sample elements in trie
             for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-                trie.addToTrie(entry.getKey(), "");
+                trie.update(entry.getKey().getBytes(), "".getBytes());
             }
 
             stopwatch.stop();

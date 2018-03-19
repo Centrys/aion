@@ -3,9 +3,9 @@ package org.aion.trie;
 import junitparams.JUnitParamsRunner;
 import org.aion.crypto.HashUtil;
 import org.aion.db.impl.mockdb.MockDB;
-import org.aion.mcf.trie.SecureTrie;
+import org.aion.mcf.trie.merkle.SecureTrie;
 import org.aion.mcf.trie.Trie;
-import org.aion.mcf.trie.TrieImpl;
+import org.aion.mcf.trie.merkle.MerkleTrieImpl;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,7 +47,7 @@ public class TrieTestWithRootHashValues {
 
     @Test
     public void testPuppy() {
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
         trie.update("do", "verb");
         trie.update("doge", "coin");
         trie.update("horse", "stallion");
@@ -59,7 +59,7 @@ public class TrieTestWithRootHashValues {
 
     @Test
     public void testEmptyValues() {
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
         trie.update("do", "verb");
         trie.update("ether", "wookiedoo");
         trie.update("horse", "stallion");
@@ -75,7 +75,7 @@ public class TrieTestWithRootHashValues {
 
     @Test
     public void testFoo() {
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
         trie.update("foo", "bar");
         trie.update("food", "bat");
         trie.update("food", "bass");
@@ -86,7 +86,7 @@ public class TrieTestWithRootHashValues {
 
     @Test
     public void testSmallValues() {
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
 
         trie.update("be", "e");
         trie.update("dog", "puppy");
@@ -97,7 +97,7 @@ public class TrieTestWithRootHashValues {
 
     @Test
     public void testDogs() {
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
         trie.update("doe", "reindeer");
         assertEquals("11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e",
                 Hex.toHexString(trie.getRootHash()));
@@ -113,7 +113,7 @@ public class TrieTestWithRootHashValues {
 
     @Test
     public void testTrieUndo() {
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
         trie.update("doe", "reindeer");
         assertEquals("11a0327cfcc5b7689b6b6d727e1f5f8846c1137caaa9fc871ba31b7cce1b703e",
                 Hex.toHexString(trie.getRootHash()));
@@ -133,7 +133,7 @@ public class TrieTestWithRootHashValues {
         String ROOT_HASH_BEFORE = "3a784eddf1936515f0313b073f99e3bd65c38689021d24855f62a9601ea41717";
         String ROOT_HASH_AFTER1 = "60a2e75cfa153c4af2783bd6cb48fd6bed84c6381bc2c8f02792c046b46c0653";
         String ROOT_HASH_AFTER2 = "a84739b4762ddf15e3acc4e6957e5ab2bbfaaef00fe9d436a7369c6f058ec90d";
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
 
         trie.update(cat, dog);
         assertEquals(dog, new String(trie.get(cat)));
@@ -166,7 +166,7 @@ public class TrieTestWithRootHashValues {
         String ROOT_HASH_AFTER1 = "f586af4a476ba853fca8cea1fbde27cd17d537d18f64269fe09b02aa7fe55a9e";
         String ROOT_HASH_AFTER2 = "c59fdc16a80b11cc2f7a8b107bb0c954c0d8059e49c760ec3660eea64053ac91";
 
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
         trie.update(c, LONG_STRING);
         assertEquals(LONG_STRING, new String(trie.get(c)));
 
@@ -190,7 +190,7 @@ public class TrieTestWithRootHashValues {
     public void testDeleteLongString1() {
         String ROOT_HASH_BEFORE = "318961a1c8f3724286e8e80d312352f01450bc4892c165cc7614e1c2e5a0012a";
         String ROOT_HASH_AFTER = "63356ecf33b083e244122fca7a9b128cc7620d438d5d62e4f8b5168f1fb0527b";
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
 
         trie.update(cat, LONG_STRING);
         assertEquals(LONG_STRING, new String(trie.get(cat)));
@@ -208,7 +208,7 @@ public class TrieTestWithRootHashValues {
     public void testDeleteLongString2() {
         String ROOT_HASH_BEFORE = "e020de34ca26f8d373ff2c0a8ac3a4cb9032bfa7a194c68330b7ac3584a1d388";
         String ROOT_HASH_AFTER = "334511f0c4897677b782d13a6fa1e58e18de6b24879d57ced430bad5ac831cb2";
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
 
         trie.update(ca, LONG_STRING);
         assertEquals(LONG_STRING, new String(trie.get(ca)));
@@ -226,7 +226,7 @@ public class TrieTestWithRootHashValues {
     public void testDeleteLongString3() {
         String ROOT_HASH_BEFORE = "e020de34ca26f8d373ff2c0a8ac3a4cb9032bfa7a194c68330b7ac3584a1d388";
         String ROOT_HASH_AFTER = "63356ecf33b083e244122fca7a9b128cc7620d438d5d62e4f8b5168f1fb0527b";
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
 
         trie.update(cat, LONG_STRING);
         assertEquals(LONG_STRING, new String(trie.get(cat)));
@@ -253,7 +253,7 @@ public class TrieTestWithRootHashValues {
         byte[] val3 = Hex.decode("94412e0c4f0102f3f0ac63f0a125bce36ca75d4e0d");
         byte[] val4 = Hex.decode("01");
 
-        TrieImpl storage = new TrieImpl(new MockDB("Test"));
+        MerkleTrieImpl storage = new MerkleTrieImpl(new MockDB("Test"));
         storage.update(key1, val1);
         storage.update(key2, val2);
         storage.update(key3, val3);
@@ -267,7 +267,7 @@ public class TrieTestWithRootHashValues {
 
     @Test
     public void testTesty() {
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
 
         trie.update("test", "test");
         assertEquals("85d106d4edff3b7a4889e91251d0a87d7c17a1dda648ebdba8c6060825be23b8",
@@ -282,7 +282,7 @@ public class TrieTestWithRootHashValues {
     public void testDeleteShortString1() {
         String ROOT_HASH_BEFORE = "a9539c810cc2e8fa20785bdd78ec36cc1dab4b41f0d531e80a5e5fd25c3037ee";
         String ROOT_HASH_AFTER = "fc5120b4a711bca1f5bb54769525b11b3fb9a8d6ac0b8bf08cbb248770521758";
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
 
         trie.update(cat, dog);
         assertEquals(dog, new String(trie.get(cat)));
@@ -300,7 +300,7 @@ public class TrieTestWithRootHashValues {
     public void testDeleteShortString2() {
         String ROOT_HASH_BEFORE = "a9539c810cc2e8fa20785bdd78ec36cc1dab4b41f0d531e80a5e5fd25c3037ee";
         String ROOT_HASH_AFTER = "b25e1b5be78dbadf6c4e817c6d170bbb47e9916f8f6cc4607c5f3819ce98497b";
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
 
         trie.update(ca, dude);
         assertEquals(dude, new String(trie.get(ca)));
@@ -318,7 +318,7 @@ public class TrieTestWithRootHashValues {
     public void testDeleteShortString3() {
         String ROOT_HASH_BEFORE = "778ab82a7e8236ea2ff7bb9cfa46688e7241c1fd445bf2941416881a6ee192eb";
         String ROOT_HASH_AFTER = "05875807b8f3e735188d2479add82f96dee4db5aff00dc63f07a7e27d0deab65";
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
 
         trie.update(cat, dude);
         assertEquals(dude, new String(trie.get(cat)));
@@ -334,7 +334,7 @@ public class TrieTestWithRootHashValues {
 
     @Test
     public void testSingleItem() {
-        TrieImpl trie = new TrieImpl(mockDb);
+        MerkleTrieImpl trie = new MerkleTrieImpl(mockDb);
         trie.update("A", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 
         assertEquals("d23786fb4a010da3ce639d66d5e904a11dbc02746d1ce25029e53290cabf28ab",
@@ -389,7 +389,7 @@ public class TrieTestWithRootHashValues {
     @Test
     public void testDeleteAll() {
         String ROOT_HASH_BEFORE = "a84739b4762ddf15e3acc4e6957e5ab2bbfaaef00fe9d436a7369c6f058ec90d";
-        TrieImpl trie = new TrieImpl(null);
+        MerkleTrieImpl trie = new MerkleTrieImpl(null);
         assertEquals(ROOT_HASH_EMPTY, Hex.toHexString(trie.getRootHash()));
 
         trie.update(ca, dude);

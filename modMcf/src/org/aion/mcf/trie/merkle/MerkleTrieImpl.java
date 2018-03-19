@@ -18,7 +18,7 @@
  * Contributors:
  *     Aion foundation.
  *******************************************************************************/
-package org.aion.mcf.trie;
+package org.aion.mcf.trie.merkle;
 
 import static java.util.Arrays.copyOfRange;
 import static org.aion.base.util.ByteArrayWrapper.wrap;
@@ -48,6 +48,7 @@ import org.aion.base.util.ByteArrayWrapper;
 import org.aion.base.util.FastByteComparisons;
 import org.aion.base.util.Hex;
 import org.aion.crypto.HashUtil;
+import org.aion.mcf.trie.*;
 import org.aion.rlp.RLP;
 import org.aion.rlp.RLPItem;
 import org.aion.rlp.RLPList;
@@ -83,7 +84,7 @@ import org.aion.rlp.Value;
  * @author Nick Savers
  * @since 20.05.2014
  */
-public class TrieImpl implements Trie {
+public class MerkleTrieImpl implements Trie {
     private static byte PAIR_SIZE = 2;
     private static byte LIST_SIZE = 17;
     private static int MAX_SIZE = 20;
@@ -95,11 +96,11 @@ public class TrieImpl implements Trie {
 
     private boolean pruningEnabled;
 
-    public TrieImpl(IByteArrayKeyValueStore db) {
+    public MerkleTrieImpl(IByteArrayKeyValueStore db) {
         this(db, "");
     }
 
-    public TrieImpl(IByteArrayKeyValueStore db, Object root) {
+    public MerkleTrieImpl(IByteArrayKeyValueStore db, Object root) {
         this.cache = new Cache(db);
         this.root = root;
         this.prevRoot = root;
@@ -154,7 +155,7 @@ public class TrieImpl implements Trie {
         return pruningEnabled;
     }
 
-    public TrieImpl withPruningEnabled(boolean pruningEnabled) {
+    public MerkleTrieImpl withPruningEnabled(boolean pruningEnabled) {
         this.pruningEnabled = pruningEnabled;
         return this;
     }
@@ -520,9 +521,9 @@ public class TrieImpl implements Trie {
     }
 
     // Returns a copy of this trie
-    public TrieImpl copy() {
+    public MerkleTrieImpl copy() {
         synchronized (cache) {
-            TrieImpl trie = new TrieImpl(this.cache.getDb(), this.root);
+            MerkleTrieImpl trie = new MerkleTrieImpl(this.cache.getDb(), this.root);
             for (ByteArrayWrapper key : this.cache.getNodes().keySet()) {
                 Node node = this.cache.getNodes().get(key);
                 trie.cache.getNodes().put(key, node.copy());
@@ -738,7 +739,7 @@ public class TrieImpl implements Trie {
         synchronized (cache) {
             final int[] cnt = new int[1];
             try {
-                scanTree(getRootHash(), new TrieImpl.ScanAction() {
+                scanTree(getRootHash(), new MerkleTrieImpl.ScanAction() {
                     @Override
                     public void doOnNode(byte[] hash, Value node) {
                         cnt[0]++;
