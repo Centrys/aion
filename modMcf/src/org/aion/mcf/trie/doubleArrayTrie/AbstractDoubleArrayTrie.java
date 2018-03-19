@@ -1,8 +1,17 @@
 package org.aion.mcf.trie.doubleArrayTrie;
 
+import org.aion.base.util.ByteArrayWrapper;
+import org.aion.crypto.HashUtil;
+import org.aion.mcf.trie.Node;
+import org.aion.rlp.RLP;
+import org.aion.rlp.Value;
+
 import java.util.*;
 
+import static org.aion.base.util.ByteArrayWrapper.wrap;
+import static org.aion.crypto.HashUtil.EMPTY_TRIE_HASH;
 import static org.aion.rlp.CompactEncoder.binToNibbles;
+import static org.aion.rlp.CompactEncoder.packNibbles;
 import static org.aion.rlp.Utils.hexEncode;
 
 public abstract class AbstractDoubleArrayTrie {
@@ -19,6 +28,7 @@ public abstract class AbstractDoubleArrayTrie {
     protected final int alphabetLength;
     //storing the hashmap of the values of the leaf nodes
     private Map<Integer, byte[]> cache = new HashMap<>();
+    private Map<Integer, Object> hashCache = new HashMap<>();
 
     /**
      * Constructs a DoubleArrayTrie for the given alphabet length.
@@ -68,7 +78,11 @@ public abstract class AbstractDoubleArrayTrie {
                     setBase(transition, LEAF_BASE_VALUE); 	// So this is a leaf
 
                     //storing the value in the cache for further referencing
+                    Object[] newNode = new Object[] { packNibbles(keyNibbles), value };
                     cache.put(transition, value);
+                    hashCache.put(transition, getHash(newNode));
+                    //backtracking hashing values to the root node
+                    propagate(transition);
 
                     changed = true;
                 }
@@ -90,7 +104,13 @@ public abstract class AbstractDoubleArrayTrie {
             }
             else if (getBase(transition) == LEAF_BASE_VALUE) {
                 //update the leaf if it exists
+
+                Object[] newNode = new Object[] { packNibbles(keyNibbles), value };
                 cache.put(transition, value);
+
+                hashCache.put(transition, getHash(newNode));
+                propagate(transition);
+
                 changed = true;
             }
 
@@ -107,6 +127,78 @@ public abstract class AbstractDoubleArrayTrie {
         }
         return changed;
     }
+
+    private static Object[] emptyStringSlice(int l) {
+        Object[] slice = new Object[l];
+        for (int i = 0; i < l; i++) {
+            slice[i] = "";
+        }
+        return slice;
+    }
+
+    public Object getRoot(){
+        //System.out.println(hashCache.get(0));
+        return hashCache.get(0);
+    }
+
+    public byte[] getRootHash() {
+        if (getRoot() == null || (getRoot() instanceof byte[] && ((byte[]) getRoot()).length == 0) || (getRoot() instanceof String && ""
+                .equals(getRoot()))) {
+            return EMPTY_TRIE_HASH;
+        } else if (getRoot() instanceof byte[]) {
+            return (byte[]) this.getRoot();
+        } else {
+            Value rootValue = new Value(this.getRoot());
+            return HashUtil.h256(rootValue.encode());
+        }
+    }
+
+    private void propagate(int transition) {
+        //propagate the hash upwards in the trie up to the corresponding root node
+        int currentTransition = transition;
+        do {
+            //get the parent of this node
+            int parentState   = getCheck(currentTransition);
+            Object[] childHashes = emptyStringSlice(17);
+
+            int numberOfChilds = 0;
+            int lastChildIndex = -1;
+            //get all he children from this node
+            for (int c = 0; c < alphabetLength; c++) {
+                int tempNext = getBase(parentState) + c;
+                if (tempNext < getSize() && getCheck(tempNext) == parentState) {
+                    if (hashCache.get(tempNext) != null) {
+                        childHashes[c] = (hashCache.get(tempNext));
+                        lastChildIndex = c;
+                        numberOfChilds++;
+                    } else {
+                        System.out.println("The child has no hash");
+                    }
+                }
+            }
+
+            // we have all the hashes of it's children
+            // compute the parent hash
+            if(numberOfChilds > 1) {
+                hashCache.put(parentState, getHash(childHashes));
+            } else {
+                hashCache.put(parentState, childHashes[lastChildIndex]);
+            }
+
+            currentTransition = parentState;
+        } while(currentTransition != 0);
+    }
+
+    private Object getHash(Object o){
+        Value value = new Value(o);
+        byte[] enc = value.encode();
+        if (enc.length >= 32) {
+            return HashUtil.h256(value.encode());
+        }
+        return value;
+    }
+
+
 
     /**
      * This method is the most complex part of the algorithm.
@@ -168,6 +260,12 @@ public abstract class AbstractDoubleArrayTrie {
                 byte[] oldValue = cache.get(s);
                 cache.remove(getBase(s) + c);
                 cache.put(getBase(newLocation + c), oldValue);
+            }
+
+            if(hashCache.get(getBase(s) + c) != null) {
+                Object tmp = hashCache.get(getBase(s) + c);
+                hashCache.remove(getBase(s) + c);
+                hashCache.put(newLocation + c, tmp);
             }
 
             updateChildMove(s, c, newLocation);
