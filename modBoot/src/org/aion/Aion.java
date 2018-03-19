@@ -94,6 +94,9 @@ public class Aion {
                         "                     NETWORK\n\n"
                 );
 
+        //Test code for cfg. should remove this:
+        System.out.println(cfg.getWallet().isUiEnabled());
+
         IAionChain ac = AionFactory.create();
                 
         IMineRunner nm = ac.getBlockMiner();

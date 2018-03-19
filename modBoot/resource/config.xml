@@ -46,4 +46,7 @@
 		<CONS>INFO</CONS>
 		<DB>ERROR</DB>
 	</log>
+	<wallet>
+		<ui_enabled>true</ui_enabled>
+	</wallet>
 </aion>

@@ -25,15 +25,18 @@
 
 package org.aion.zero.impl.config;
 
-import java.io.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import javax.xml.stream.*;
 import org.aion.mcf.config.*;
 import org.aion.zero.impl.AionGenesis;
 import org.aion.zero.impl.GenesisBlockLoader;
+
+import javax.xml.stream.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author chris
@@ -49,15 +52,9 @@ public final class CfgAion extends Cfg {
     private static final String NODE_ID_PLACEHOLDER = "[NODE-ID-PLACEHOLDER]";
 
     private CfgAion() {
-        this.mode = "aion";
-        this.id = UUID.randomUUID().toString();
-        this.net = new CfgNet();
-        this.consensus = new CfgConsensusPow();
-        this.sync = new CfgSync();
-        this.api = new CfgApi();
-        this.db = new CfgDb();
-        this.log = new CfgLog();
-        this.tx = new CfgTx();
+        super("aion", UUID.randomUUID().toString(), new CfgApi(), new CfgNet(), new CfgConsensusPow(), new CfgSync(),
+              new CfgDb(), new CfgLog(), new CfgTx(), new CfgWallet()
+        );
     }
 
     private static class CfgAionHolder {
@@ -74,7 +71,7 @@ public final class CfgAion extends Cfg {
     }
 
     public CfgConsensusPow getConsensus() {
-        return (CfgConsensusPow) this.consensus;
+        return (CfgConsensusPow) super.getConsensus();
     }
 
     public synchronized AionGenesis getGenesis() {
@@ -116,7 +113,7 @@ public final class CfgAion extends Cfg {
                     String elementName = sr.getLocalName().toLowerCase();
                     switch (elementName) {
                     case "db":
-                        this.db.fromXML(sr);
+                        getDb().fromXML(sr);
                         break;
                     default:
                         skipElement(sr);
@@ -158,35 +155,38 @@ public final class CfgAion extends Cfg {
                     case "id":
                         String nodeId = readValue(sr);
                         if(NODE_ID_PLACEHOLDER.equals(nodeId)) {
-                            this.id = UUID.randomUUID().toString();
+                            setId(UUID.randomUUID().toString());
                             shouldWriteBackToFile = true;
                         } else {
-                            this.id = nodeId;
+                            setId(nodeId);
                         }
                         break;
                     case "mode":
-                        this.mode = readValue(sr);
+                        setMode(readValue(sr));
                         break;
                     case "api":
-                        this.api.fromXML(sr);
+                        getApi().fromXML(sr);
                         break;
                     case "net":
-                        this.net.fromXML(sr);
+                        getNet().fromXML(sr);
                         break;
                     case "sync":
-                        this.sync.fromXML(sr);
+                        getSync().fromXML(sr);
                         break;
                     case "consensus":
-                        this.consensus.fromXML(sr);
+                        getConsensus().fromXML(sr);
                         break;
                     case "db":
-                        this.db.fromXML(sr);
+                        getDb().fromXML(sr);
                         break;
                     case "log":
-                        this.log.fromXML(sr);
+                        getLog().fromXML(sr);
                         break;
                     case "tx":
-                        this.tx.fromXML(sr);
+                        getTx().fromXML(sr);
+                        break;
+                    case "wallet":
+                        getWallet().fromXML(sr);
                         break;
                     default:
                         skipElement(sr);
@@ -219,7 +219,7 @@ public final class CfgAion extends Cfg {
                     String id = arg.replace("--id=", "");
                     try {
                         UUID uuid = UUID.fromString(id);
-                        this.id = uuid.toString();
+                        setId(uuid.toString());
                     } catch (IllegalArgumentException exception) {
                         System.out.println("<invalid-id-arg id=" + id + ">");
                     }
@@ -252,7 +252,7 @@ public final class CfgAion extends Cfg {
                         if ((i1 + 1) < max1) {
                             String _module = subArgsArr[i1].toUpperCase();
                             String _level = subArgsArr[++i1].toUpperCase();
-                            this.log.getModules().put(_module, _level);
+                            getLog().getModules().put(_module, _level);
                         }
                     }
                 }

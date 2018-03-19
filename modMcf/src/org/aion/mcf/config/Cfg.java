@@ -25,9 +25,10 @@
 
 package org.aion.mcf.config;
 
+import org.aion.mcf.types.AbstractBlock;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import org.aion.mcf.types.AbstractBlock;
 
 /**
  * @author chris
@@ -40,23 +41,72 @@ public abstract class Cfg {
 
     protected static final String GENESIS_FILE_PATH = BASE_PATH + "/config/genesis.json";
 
-    protected String mode;
+    private String mode;
 
-    protected String id;
+    private String id;
 
-    protected CfgApi api;
+    private CfgApi api;
 
-    protected CfgNet net;
+    private CfgNet net;
 
-    protected CfgConsensus consensus;
+    private CfgConsensus consensus;
 
-    protected CfgSync sync;
+    private CfgSync sync;
 
-    protected CfgDb db;
+    private CfgDb db;
 
-    protected CfgLog log;
+    private CfgLog log;
 
-    protected CfgTx tx;
+    private CfgTx tx;
+
+    private CfgWallet cfgWallet;
+
+    public Cfg(
+            final String mode, final String id, final CfgApi api, final CfgNet net, final CfgConsensus consensus,
+            final CfgSync sync, final CfgDb db, final CfgLog log, final CfgTx tx, final CfgWallet wallet
+    ) {
+        this.mode = mode;
+        this.id = id;
+        this.api = api;
+        this.net = net;
+        this.consensus = consensus;
+        this.sync = sync;
+        this.db = db;
+        this.log = log;
+        this.tx = tx;
+        this.cfgWallet = wallet;
+    }
+
+    public static String readValue(final XMLStreamReader sr) throws XMLStreamException {
+        StringBuilder str = new StringBuilder();
+        readLoop:
+        while (sr.hasNext()) {
+            int eventType = sr.next();
+            switch (eventType) {
+                case XMLStreamReader.CHARACTERS:
+                    str.append(sr.getText());
+                    break;
+                case XMLStreamReader.END_ELEMENT:
+                    break readLoop;
+            }
+        }
+        return str.toString();
+    }
+
+    public static void skipElement(final XMLStreamReader sr) throws XMLStreamException {
+        skipLoop:
+        while (sr.hasNext()) {
+            int eventType = sr.next();
+            switch (eventType) {
+                case XMLStreamReader.END_ELEMENT:
+                    break skipLoop;
+            }
+        }
+    }
+
+    public void setMode(final String mode) {
+        this.mode = mode;
+    }
 
     public void setId(final String _id){
         this.id = _id;
@@ -114,8 +164,16 @@ public abstract class Cfg {
         return this.tx;
     }
 
+    public CfgWallet getWallet() {
+        return cfgWallet;
+    }
+
     public String[] getNodes() {
         return this.net.getNodes();
+    }
+
+    public CfgConsensus getConsensus() {
+        return consensus;
     }
 
     /**
@@ -123,33 +181,6 @@ public abstract class Cfg {
      */
     public String getBasePath() {
         return BASE_PATH;
-    }
-
-    public static String readValue(final XMLStreamReader sr) throws XMLStreamException {
-        StringBuilder str = new StringBuilder();
-        readLoop:
-        while (sr.hasNext()) {
-            int eventType = sr.next();
-            switch (eventType) {
-            case XMLStreamReader.CHARACTERS:
-                str.append(sr.getText());
-                break;
-            case XMLStreamReader.END_ELEMENT:
-                break readLoop;
-            }
-        }
-        return str.toString();
-    }
-
-    public static void skipElement(final XMLStreamReader sr) throws XMLStreamException {
-        skipLoop:
-        while (sr.hasNext()) {
-            int eventType = sr.next();
-            switch (eventType) {
-            case XMLStreamReader.END_ELEMENT:
-                break skipLoop;
-            }
-        }
     }
 
     /**
@@ -164,5 +195,4 @@ public abstract class Cfg {
     public abstract void setGenesis();
 
     public abstract AbstractBlock<?, ?> getGenesis();
-
 }
