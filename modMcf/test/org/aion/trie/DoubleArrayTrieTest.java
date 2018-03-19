@@ -106,12 +106,30 @@ public class DoubleArrayTrieTest {
 
     @Test
     public void checkDeleteRootHashPropagation(){
-        // delete an existing node and make sure that the changes propagate up to the root
+        for(Map.Entry<String, String> entry : getStaticSampleData().entrySet()){
+            trie.addToTrie(entry.getKey(), entry.getValue());
+        }
+
+        byte[] tempRootHash = trie.getRootHash();
+
+        trie.addToTrie("key1", "");
+
+        byte[] newRootHash = trie.getRootHash();
+
+        Assert.assertEquals(false, Arrays.equals(tempRootHash, newRootHash));
     }
 
     @Test
     public void checkDeleteRootHashCorrectness(){
-        // add two nodes delete one, check that the root matches when we only had one node.
+        trie.addToTrie("key1", "value1");
+        byte[] tempRootHash = trie.getRootHash();
+        trie.addToTrie("key2", "value2");
+        trie.addToTrie("key2", "");
+        byte[] newRootHash = trie.getRootHash();
+
+        Assert.assertEquals(true, Arrays.equals(tempRootHash, newRootHash));
+
+
     }
 
     @Test
