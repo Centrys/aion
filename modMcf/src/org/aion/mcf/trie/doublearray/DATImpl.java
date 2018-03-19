@@ -11,35 +11,20 @@ import static org.aion.rlp.CompactEncoder.binToNibbles;
 import static org.aion.rlp.CompactEncoder.packNibbles;
 
 public class DATImpl implements Trie {
+    private static final int LEAF_BASE_VALUE = -2;  // The leaf base value
+    private static final int ROOT_CHECK_VALUE = -3; // The root check value, normally unnecessary
+    private static final int EMPTY_VALUE = -1;      // The unoccupied spot value
+    private static final int INITIAL_ROOT_BASE = 1; // The initial offset.
 
-    // The base array.
-    private IntegerList base;
-    // The check array.
-    private IntegerList check;
-    // The free positions, for quick access
-    private TreeSet<Integer> freePositions;
+    private IntegerList base;                       // The base array.
+    private IntegerList check;                      // The check array.
+    private TreeSet<Integer> freePositions;         // The free positions, for quick access
 
+    private Map<Integer, byte[]> cache = new HashMap<>();       // Values of the leaf nodes
+    private Map<Integer, Object> hashCache = new HashMap<>();   // Hash of the nodes
 
-    // The leaf base value
-    protected static final int LEAF_BASE_VALUE = -2;
-    // The root check value, normally unnecessary
-    protected static final int ROOT_CHECK_VALUE = -3;
-    // The unoccupied spot value
-    protected static final int EMPTY_VALUE = -1;
-    // The initial offset.
-    protected static final int INITIAL_ROOT_BASE = 1;
-    // The alphabet length
-    protected final int alphabetLength;
-    //storing the hashmap of the values of the leaf nodes
-    private Map<Integer, byte[]> cache = new HashMap<>();
-    private Map<Integer, Object> hashCache = new HashMap<>();
+    private final int alphabetLength;               // The alphabet length
 
-    /**
-     * Constructs a DoubleArrayTrie for the given alphabet length.
-     *
-     * @param alphabetLength The size of the set of values that
-     * 				are to be stored.
-     */
     /**
      * Constructs a DoubleArrayTrie for the given alphabet length.
      * Uses a default IntegerArrayList for storage.
@@ -60,7 +45,7 @@ public class DATImpl implements Trie {
      * @param listFactory The IntegerListFactory to use for creating
      * 				the storage.
      */
-    public DATImpl(int alphabetLength, IntegerListFactory listFactory) {
+    private DATImpl(int alphabetLength, IntegerListFactory listFactory) {
         this.alphabetLength = alphabetLength;
         init(listFactory);
     }
@@ -75,13 +60,15 @@ public class DATImpl implements Trie {
      */
     public byte[] get(byte[] key) {
         int state		= 0; // The current DFA state ordinal
-        int transition	= 0; // The candidate for the transition end state
+        int transition; // The candidate for the transition end state
         int i			= 0; // The input string index
-        int current		= 0; // The current input character
+        int current; // The current input character
+
         SearchState result = new SearchState();  // The search result
         byte[] keyNibbles = binToNibbles(key);
         result.prefix = keyNibbles;
         result.result = SearchResult.PURE_PREFIX; // The default value
+
         // For every input character
         while (i < keyNibbles.length) {
             current = keyNibbles[i];
@@ -108,12 +95,12 @@ public class DATImpl implements Trie {
                 result.result = SearchResult.NOT_FOUND;
                 break;
             }
-            //TODO @Robert this does nothing
-            //updateSearch(state, i, keyNibbles);
+
+            updateSearch(state, i, keyNibbles);
             i++;
         }
-        //TODO @Robert this does nothing
-        //updateSearch(state, i, keyNibbles);
+
+        updateSearch(state, i, keyNibbles);
         result.finishedAtState = state;
         result.index = i;
         //return result;
@@ -127,13 +114,12 @@ public class DATImpl implements Trie {
     public void update(byte[] key, byte[] value) {
         // Start from the root
         int state = 0;		// The current DFA state ordinal
-        int transition = 0;	// The candidate for the transition end state
+        int transition;	// The candidate for the transition end state
         int i = 0;			// The input string index
-        int c = 0;			// The current input string character
+        int c;			// The current input string character
         // For every input character
         byte[] keyNibbles = binToNibbles(key);
         while (i < keyNibbles.length) {
-            assert state >= 0;
             assert getBase(state) >= 0;
             c = keyNibbles[i];
             // Calculate next hop. It is the base contents of the current state
@@ -206,13 +192,14 @@ public class DATImpl implements Trie {
     }
 
     public byte[] getRootHash() {
-        if (getRoot() == null || (getRoot() instanceof byte[] && ((byte[]) getRoot()).length == 0) || (getRoot() instanceof String && ""
-                .equals(getRoot()))) {
+        Object root = hashCache.get(0);
+        if (root == null || (root instanceof byte[] && ((byte[]) root).length == 0) || (root instanceof String && ""
+                .equals(root))) {
             return EMPTY_TRIE_HASH;
-        } else if (getRoot() instanceof byte[]) {
-            return (byte[]) this.getRoot();
+        } else if (root instanceof byte[]) {
+            return (byte[]) root;
         } else {
-            Value rootValue = new Value(this.getRoot());
+            Value rootValue = new Value(root);
             return HashUtil.h256(rootValue.encode());
         }
     }
@@ -223,11 +210,6 @@ public class DATImpl implements Trie {
             slice[i] = "";
         }
         return slice;
-    }
-
-    public Object getRoot(){
-        //System.out.println(hashCache.get(0));
-        return hashCache.get(0);
     }
 
     private void propagate(int transition) {
@@ -289,32 +271,32 @@ public class DATImpl implements Trie {
      * @param s The state to move
      * @param newValue The value that causes the conflict.
      */
-    protected void resolveConflict(int s, int newValue) {
+    private void resolveConflict(int s, int newValue) {
 
         // The set of children values
-        TreeSet<Integer> values = new TreeSet<Integer>();
+        TreeSet<Integer> values = new TreeSet<>();
 
         // Add the value-to-add
-        values.add(new Integer(newValue));
+        values.add(newValue);
 
         // Find all existing children and add them too.
         for (int c = 0; c < alphabetLength; c++) {
             int tempNext = getBase(s) + c;
             if (tempNext < getSize() && getCheck(tempNext) == s)
-                values.add(new Integer(c));
+                values.add(c);
         }
 
         // Find a place to move them.
         int newLocation = nextAvailableMove(values);
 
         // newValue is not yet a child of s, so we should not check for it.
-        values.remove(new Integer(newValue));
+        values.remove(newValue);
 
         /*
          * This is where the job is done. For each child of s,
          */
         for (Integer value : values) {
-            int c = value.intValue();		// The child state to move
+            int c = value;		// The child state to move
             int tempNext = getBase(s) + c;	//
             assert tempNext < getSize();
             assert getCheck(tempNext) == s;
@@ -409,7 +391,7 @@ public class DATImpl implements Trie {
      * @param position The index in the base array
      * @return The value at <tt>position</tt>
      */
-    protected int getBase(int position) {
+    private int getBase(int position) {
         return base.get(position);
     }
 
@@ -419,7 +401,7 @@ public class DATImpl implements Trie {
      * @param position The index in the check array
      * @return The value at <tt>position</tt>
      */
-    protected int getCheck(int position) {
+    private int getCheck(int position) {
         return check.get(position);
     }
 
@@ -430,13 +412,13 @@ public class DATImpl implements Trie {
      * @param position The index in the base array whose value is to be set
      * @param value The value to set
      */
-    protected void setBase(int position, int value) {
+    private void setBase(int position, int value) {
         base.set(position, value);
         if (value == EMPTY_VALUE) {
-            freePositions.add(new Integer(position));
+            freePositions.add(position);
         }
         else {
-            freePositions.remove(new Integer(position));
+            freePositions.remove(position);
         }
     }
 
@@ -448,13 +430,13 @@ public class DATImpl implements Trie {
      * @param position The index in the check array whose value is to be set
      * @param value The value to set
      */
-    protected void setCheck(int position, int value) {
+    private void setCheck(int position, int value) {
         check.set(position, value);
         if (value == EMPTY_VALUE) {
-            freePositions.add(new Integer(position));
+            freePositions.add(position);
         }
         else {
-            freePositions.remove(new Integer(position));
+            freePositions.remove(position);
         }
     }
 
@@ -477,9 +459,9 @@ public class DATImpl implements Trie {
      * @param forValue An ordinal of the trie content type.
      * @return An index of the store that can support the argument.
      */
-    protected int nextAvailableHop(int forValue) {
+    private int nextAvailableHop(int forValue) {
 
-        Integer value = new Integer(forValue);
+        Integer value = forValue;
         /*
          * First we make sure that there exists a free location that is
          * strictly greater than the value.
@@ -495,7 +477,7 @@ public class DATImpl implements Trie {
          * to a store index. Therefore, since we add the value to the base
          * to find the next state, here we must subtract.
          */
-        int result = freePositions.higher(value).intValue() - forValue;
+        int result = freePositions.higher(value) - forValue;
         // This assertion must pass thanks to the loop above
         assert result >= 0;
         return result;
@@ -509,7 +491,7 @@ public class DATImpl implements Trie {
      * @param values The children of a state.
      * @return Where the state must be moved to accommodate it's children.
      */
-    protected int nextAvailableMove(SortedSet<Integer> values) {
+    private int nextAvailableMove(SortedSet<Integer> values) {
         // In the case of a single child, the problem is solved.
         if (values.size() == 1) {
             return nextAvailableHop(values.first());
@@ -534,7 +516,7 @@ public class DATImpl implements Trie {
      * almost zero overhead.
      * @param limit The least required accessible index.
      */
-    protected void ensureReachableIndex(int limit) {
+    private void ensureReachableIndex(int limit) {
         while (getSize() <= limit) {
             /*
              * In essence, we let all enlargement operations to the implementing
@@ -558,7 +540,7 @@ public class DATImpl implements Trie {
         /**
          * The searched for string
          */
-        protected byte[] prefix;
+        byte[] prefix;
 
         /**
          * The index within the prefix string that the search ended.
@@ -571,7 +553,7 @@ public class DATImpl implements Trie {
          * The index in the base array of the state at which the
          * walking algorithm concluded.
          */
-        protected int finishedAtState;
+        int finishedAtState;
 
         /**
          * The result of the search. It is also reproducible by
@@ -649,7 +631,7 @@ public class DATImpl implements Trie {
      * @param stringIndex The index of the search string for which the event occurred
      * @param searchString The search string
      */
-    protected void updateSearch(int state, int stringIndex, IntegerList searchString) {
+    private void updateSearch(int state, int stringIndex, byte[] searchString) {
         // No op
     }
 
@@ -661,7 +643,7 @@ public class DATImpl implements Trie {
      * @param stringIndex The index of the inserted string for which the event occurred
      * @param insertString The inserted string
      */
-    protected void updateInsert(int state, int stringIndex, IntegerList insertString) {
+    protected void updateInsert(int state, int stringIndex, byte[] insertString) {
         // No op
     }
 
@@ -676,8 +658,8 @@ public class DATImpl implements Trie {
      * @param forCharacter The character leading to this child from the parent.
      * @param newParentBase The new parent base value
      */
-    protected void updateChildMove(int parentIndex, int forCharacter,
-                                   int newParentBase) {
+    private void updateChildMove(int parentIndex, int forCharacter,
+                                 int newParentBase) {
         assert getCheck(getBase(parentIndex) + forCharacter) == parentIndex;
     }
 
@@ -689,7 +671,7 @@ public class DATImpl implements Trie {
      * @param stateIndex The index of the state whose base is changed
      * @param newBase The new base value for the state
      */
-    protected void updateStateMove(int stateIndex, int newBase) {
+    private void updateStateMove(int stateIndex, int newBase) {
         // No op
     }
 
