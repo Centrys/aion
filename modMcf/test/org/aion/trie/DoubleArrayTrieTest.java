@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -30,6 +31,15 @@ public class DoubleArrayTrieTest {
 
     }
 
+    private Map<String, String> getStaticSampleData(){
+        Map<String, String> sampleDataMap = new HashMap<>();
+
+        sampleDataMap.put("key1", "value1");
+        sampleDataMap.put("key2", "value2");
+
+        return sampleDataMap;
+    }
+
     private Map<String, String> getSampleData(int sampleSize) {
         Map<String, String> sampleDataMap = new HashMap<>();
 
@@ -41,24 +51,64 @@ public class DoubleArrayTrieTest {
 
     @Test
     public void checkDeterministicRoot(){
-        // for the same input the root should be the same
+        Map<String, String> data = getStaticSampleData();
+
+        for(Map.Entry<String, String> entry : data.entrySet()){
+            trie.addToTrie(entry.getKey(), entry.getValue());
+        }
+
+        byte[] firstRoothash = trie.getRootHash();
+        DATImpl trie2 = new DATImpl(17);
+
+        for(Map.Entry<String, String> entry : data.entrySet()){
+            trie2.addToTrie(entry.getKey(), entry.getValue());
+        }
+
+        byte[] secondRootHash = trie2.getRootHash();
+
+        Assert.assertEquals(true, Arrays.equals(firstRoothash, secondRootHash));
     }
 
     @Test
     public void checkHashPropagation(){
-        // check that for a given n numbers of key value pairs when we insert a new pair the hash propagates up to the root
+
+        for(Map.Entry<String, String> entry : getSampleData(10).entrySet()){
+            trie.addToTrie(entry.getKey(), entry.getValue());
+        }
+
+        byte[] rootHashIntermediary = trie.getRootHash();
+
+        for(Map.Entry<String, String> entry : getStaticSampleData().entrySet()){
+            trie.addToTrie(entry.getKey(), entry.getValue());
+        }
+
+        byte[] rootHashFinal = trie.getRootHash();
+
+        Assert.assertEquals(false, Arrays.equals(rootHashFinal, rootHashIntermediary));
+
     }
 
     @Test
     public void checkUpdatePropagatesRootHashChanges(){
-        // update an existing value and check that the changes propagate to the root
+        for(Map.Entry<String, String> entry : getStaticSampleData().entrySet()){
+            trie.addToTrie(entry.getKey(), entry.getValue());
+        }
+
+        byte[] tempRootHash = trie.getRootHash();
+
+        trie.addToTrie("key1", "value1New");
+
+        byte[] newRootHash = trie.getRootHash();
+
+        Assert.assertEquals(false, Arrays.equals(tempRootHash, newRootHash));
+
     }
 
     @Test
     public void checkDeleteRootHashPropagation(){
         // delete an existing node and make sure that the changes propagate up to the root
     }
-    
+
     @Test
     public void checkDeleteRootHashCorrectness(){
         // add two nodes delete one, check that the root matches when we only had one node.
