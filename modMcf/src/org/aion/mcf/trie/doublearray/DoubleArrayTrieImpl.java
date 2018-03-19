@@ -16,9 +16,9 @@ public class DoubleArrayTrieImpl implements Trie {
     private static final int EMPTY_VALUE = -1;      // The unoccupied spot value
     private static final int INITIAL_ROOT_BASE = 1; // The initial offset.
 
-    private IntegerList base;                       // The base array.
-    private IntegerList check;                      // The check array.
-    private TreeSet<Integer> freePositions;         // The free positions, for quick access
+    private IntegerArrayList base;                       // The base array.
+    private IntegerArrayList check;                      // The check array.
+    private TreeSet<Integer> freePositions;             // The free positions, for quick access
 
     private Map<Integer, byte[]> cache = new HashMap<>();       // Values of the leaf nodes
     private Map<Integer, Object> hashCache = new HashMap<>();   // Hash of the nodes
@@ -45,7 +45,7 @@ public class DoubleArrayTrieImpl implements Trie {
      * @param listFactory The IntegerListFactory to use for creating
      * 				the storage.
      */
-    private DoubleArrayTrieImpl(int alphabetLength, IntegerListFactory listFactory) {
+    private DoubleArrayTrieImpl(int alphabetLength, IntegerArrayListFactory listFactory) {
         this.alphabetLength = alphabetLength;
         init(listFactory);
     }
@@ -469,6 +469,7 @@ public class DoubleArrayTrieImpl implements Trie {
         while (freePositions.higher(value) == null) {
             ensureReachableIndex(base.size() + 1); // This adds to the freePositions store
         }
+
         /*
          * From the termination condition of the loop above, the next line
          * CANNOT throw NullPointerException
@@ -562,14 +563,14 @@ public class DoubleArrayTrieImpl implements Trie {
         protected SearchResult result;
     }
 
-    protected void init(IntegerListFactory listFactory) {
+    protected void init(IntegerArrayListFactory listFactory) {
         base = listFactory.getNewIntegerList();
         check = listFactory.getNewIntegerList();
         // The original offset, everything non-root starts at base(1)
         base.add(INITIAL_ROOT_BASE);
         // The root check has no meaning, thus a special value is needed.
         check.add(ROOT_CHECK_VALUE);
-        freePositions = new TreeSet<Integer>();
+        freePositions = new TreeSet<>();
     }
 
 

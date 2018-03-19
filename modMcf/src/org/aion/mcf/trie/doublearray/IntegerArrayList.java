@@ -2,7 +2,7 @@ package org.aion.mcf.trie.doublearray;
 
 import java.util.Arrays;
 
-public class IntegerArrayList implements IntegerList {
+public class IntegerArrayList {
 
     private final int INCREASE_RATIO_NUMERATOR;
 
@@ -76,35 +76,19 @@ public class IntegerArrayList implements IntegerList {
         }
     }
 
-    /**
-     * @see org.digitalstain.datrie.store.IntegerList#size()
-     */
-    @Override
     public int size() {
         return size;
     }
 
-    /**
-     * @see org.digitalstain.datrie.store.IntegerList#isEmpty()
-     */
-    @Override
     public boolean isEmpty() {
         return size == 0;
     }
 
-    /**
-     * @see org.digitalstain.datrie.store.IntegerList#get(int)
-     */
-    @Override
     public int get(int index) {
         checkValidIndex(index);
         return data[index];
     }
 
-    /**
-     * @see org.digitalstain.datrie.store.IntegerList#set(int, int)
-     */
-    @Override
     public int set(int index, int value) {
         checkValidIndex(index);
 
@@ -113,20 +97,12 @@ public class IntegerArrayList implements IntegerList {
         return oldValue;
     }
 
-    /**
-     * @see org.digitalstain.datrie.store.IntegerList#add(int)
-     */
-    @Override
     public boolean add(int value) {
         ensureCapacity(size + 1);
         data[size++] = value;
         return true;
     }
 
-    /**
-     * @see org.digitalstain.datrie.store.IntegerList#add(int, int)
-     */
-    @Override
     public void add(int index, int value) {
         if (index > size || index < 0)
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
@@ -137,10 +113,6 @@ public class IntegerArrayList implements IntegerList {
         size++;
     }
 
-    /**
-     * @see org.digitalstain.datrie.store.IntegerList#remove(int)
-     */
-    @Override
     public int remove(int index) {
         checkValidIndex(index);
         int oldValue = data[index];

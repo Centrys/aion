@@ -1,6 +1,6 @@
 package org.aion.mcf.trie.doublearray;
 
-public class IntegerArrayListFactory implements IntegerListFactory {
+public class IntegerArrayListFactory {
 
     private final int initialCapacity;
     private final int numerator;
@@ -43,7 +43,7 @@ public class IntegerArrayListFactory implements IntegerListFactory {
     }
 
 
-    public IntegerList getNewIntegerList() {
+    public IntegerArrayList getNewIntegerList() {
         return new IntegerArrayList(initialCapacity, numerator, denominator, fixedInc);
     }
 }
