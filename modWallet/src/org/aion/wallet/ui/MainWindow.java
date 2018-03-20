@@ -1,9 +1,12 @@
 package org.aion.wallet.ui;
 
 import javafx.application.Application;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -14,13 +17,23 @@ import org.aion.base.type.Address;
 import org.aion.wallet.WalletApi;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.net.URL;
 import java.util.List;
+import java.util.ResourceBundle;
 
-public class MainWindow extends Application {
+public class MainWindow extends Application
+        implements Initializable
+{
     private double xOffset;
     private double yOffset;
 
     private final ApiAion walletApi = new WalletApi();
+
+    @FXML
+    private TextField balanceField;
 
     @Override
     public void start(final Stage stage) throws IOException {
@@ -68,5 +81,20 @@ public class MainWindow extends Application {
 
     private void actionOnClose() {
         System.exit(0);
+    }
+
+    @Override
+    public void initialize(final URL location, final ResourceBundle resources) {
+        final List<String> accounts = walletApi.getAccounts();
+        if (!accounts.isEmpty()) {
+            final Address address = Address.wrap(accounts.get(0));
+            try {
+                final BigDecimal balance = new BigDecimal(walletApi.getBalance(address));
+                final BigDecimal decimalPlaces = new BigDecimal(BigInteger.valueOf(1000000000).multiply(BigInteger.valueOf(1000000000)));
+                balanceField.setText(String.valueOf(balance.divide(decimalPlaces, 10, RoundingMode.HALF_EVEN)));
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 }
