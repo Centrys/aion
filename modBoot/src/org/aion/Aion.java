@@ -25,11 +25,7 @@
 
 package org.aion;
 
-import static org.aion.crypto.ECKeyFac.ECKeyType.ED25519;
-import static org.aion.crypto.HashUtil.H256Type.BLAKE2B_256;
-
-import java.util.ServiceLoader;
-
+import javafx.application.Application;
 import org.aion.api.server.http.HttpServer;
 import org.aion.api.server.pb.ApiAion0;
 import org.aion.api.server.pb.IHdlr;
@@ -37,15 +33,21 @@ import org.aion.api.server.zmq.HdlrZmq;
 import org.aion.api.server.zmq.ProtocolProcessor;
 import org.aion.crypto.ECKeyFac;
 import org.aion.crypto.HashUtil;
-import org.aion.log.AionLoggerFactory;
 import org.aion.evtmgr.EventMgrModule;
+import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
 import org.aion.mcf.mine.IMineRunner;
+import org.aion.wallet.ui.MainWindow;
 import org.aion.zero.impl.blockchain.AionFactory;
 import org.aion.zero.impl.blockchain.IAionChain;
 import org.aion.zero.impl.cli.Cli;
 import org.aion.zero.impl.config.CfgAion;
 import org.slf4j.Logger;
+
+import java.util.ServiceLoader;
+
+import static org.aion.crypto.ECKeyFac.ECKeyType.ED25519;
+import static org.aion.crypto.HashUtil.H256Type.BLAKE2B_256;
 
 public class Aion {
 
@@ -95,7 +97,8 @@ public class Aion {
                 );
 
         //Test code for cfg. should remove this:
-        System.out.println(cfg.getWallet().isUiEnabled());
+        final boolean uiEnabled = cfg.getWallet().isUiEnabled();
+        System.out.println(uiEnabled);
 
         IAionChain ac = AionFactory.create();
                 
@@ -115,9 +118,7 @@ public class Aion {
             IHdlr handler = new HdlrZmq(new ApiAion0(ac));
             processor = new ProtocolProcessor(handler, cfg.getApi().getZmq());
             ProtocolProcessor finalProcessor = processor;
-            zmqThread = new Thread(() -> {
-                finalProcessor.run();
-            }, "zmq-api");
+            zmqThread = new Thread(finalProcessor, "zmq-api");
             zmqThread.start();
         }
 
@@ -165,5 +166,9 @@ public class Aion {
                 LOG.info("Shutting down the AionHub...");
                 ac.getAionHub().close();
         }, "Shutdown"));
+
+        if (uiEnabled) {
+            Application.launch(MainWindow.class, args);
+        }
     }
 }
