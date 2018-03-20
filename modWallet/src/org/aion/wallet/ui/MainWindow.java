@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -24,6 +25,7 @@ public class MainWindow extends Application {
     @Override
     public void start(final Stage stage) throws IOException {
         stage.initStyle(StageStyle.TRANSPARENT);
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("aion_logo.png")));
 
         Parent root = FXMLLoader.load(getClass().getResource("MainWindow.fxml"));
         root.setOnMousePressed(this::handleMousePressed);
