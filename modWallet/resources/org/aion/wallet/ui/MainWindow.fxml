@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/9" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.MainWindow">
+   <children>
+      <AnchorPane prefHeight="91.0" prefWidth="850.0" styleClass="anchor-pane">
+         <children>
+            <ImageView fitHeight="62.0" fitWidth="63.0" layoutX="100.0" layoutY="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@home-50.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="23.0" fitWidth="23.0" layoutX="813.0" layoutY="14.0" onMousePressed="#shutDown" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@shutdown-26.png" />
+               </image>
+            </ImageView>
+         </children></AnchorPane>
+      <AnchorPane layoutY="96.0" prefHeight="355.0" prefWidth="850.0" styleClass="anchor-pane"/>
+      <AnchorPane layoutY="455.0" prefHeight="44.0" prefWidth="850.0" styleClass="anchor-pane"/>
+   </children>
+</AnchorPane>
