@@ -5,6 +5,7 @@
     <property name="dir.dest" value="./build/main"/>
     <property name="dir.test" value="./build/test"/>
     <property name="src.test" value="./test"/>
+    <property name="res.main" value="./resources"/>
     <property name="test.report.dir" value="report"/>
     <property name="dir.javaAPIlib" value="../javaAPIlib"/>
 
@@ -40,7 +41,7 @@
                 debuglevel="source,lines,vars"
                 includeantruntime="false"
                 release="9"
-                srcdir="./test"
+                srcdir="${src.test}"
                 destdir="${dir.test}"
                 includes="**/*Test.java"
         >
@@ -81,10 +82,13 @@
             <modulepath>
                 <pathelement location="${dir.mod}/modApiServer.jar"/>
                 <pathelement location="${dir.mod}/modAionImpl.jar"/>
+                <pathelement location="${dir.mod}/modAionBase.jar"/>
                 <pathelement location="${dir.mod}/modMcf.jar"/>
             </modulepath>
         </javac>
-
+        <copy includeemptydirs="false" todir="${dir.dest}">
+            <fileset dir="${res.main}" id="**"/>
+        </copy>
         <jar
                 destfile="modWallet.jar"
                 filesetmanifest="mergewithoutmain"
