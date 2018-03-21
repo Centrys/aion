@@ -154,10 +154,16 @@ public class DoubleArrayTrieImpl implements Trie {
             }
             else if (getBase(transition) == LEAF_BASE_VALUE) {
                 //update the leaf if it exists
-                Object[] newNode = new Object[] { packNibbles(keyNibbles), value };
-                cache.put(transition, value);
 
-                hashCache.put(transition, getHash(newNode));
+                // delete the leaf if the value is of length 0
+                if(value.length == 0) {
+                    hashCache.put(transition, "");
+                } else {
+                    Object[] newNode = new Object[] { packNibbles(keyNibbles), value };
+                    hashCache.put(transition, getHash(newNode));
+                }
+
+                cache.put(transition, value);
                 propagate(transition);
             }
 
@@ -219,12 +225,11 @@ public class DoubleArrayTrieImpl implements Trie {
             for (int c = 0; c < ALPHABET_SIZE; c++) {
                 int tempNext = getBase(parentState) + c;
                 if (tempNext < getSize() && getCheck(tempNext) == parentState) {
-                    if (hashCache.get(tempNext) != null) {
+                    if (hashCache.get(tempNext) != null && hashCache.get(tempNext) != "") {
+                        //if the node has a hash and is not deleted
                         childHashes[c] = (hashCache.get(tempNext));
                         lastChildIndex = c;
                         numberOfChilds++;
-                    } else {
-                        System.out.println("The child has no hash");
                     }
                 }
             }
@@ -234,7 +239,12 @@ public class DoubleArrayTrieImpl implements Trie {
             if(numberOfChilds > 1) {
                 hashCache.put(parentState, getHash(childHashes));
             } else {
-                hashCache.put(parentState, childHashes[lastChildIndex]);
+                //no child with hash exists
+                if(lastChildIndex == -1) {
+                    hashCache.put(parentState, "");
+                } else {
+                    hashCache.put(parentState, childHashes[lastChildIndex]);
+                }
             }
 
             currentTransition = parentState;
