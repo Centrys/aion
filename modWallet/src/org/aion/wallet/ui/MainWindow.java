@@ -50,17 +50,7 @@ public class MainWindow extends Application
 
         stage.setOnCloseRequest(t -> actionOnClose());
 
-        final List<String> accounts = walletApi.getAccounts();
-        if (!accounts.isEmpty()) {
-            final Address address = Address.wrap(accounts.get(0));
-            try {
-                stage.setTitle(String.valueOf(walletApi.getBalance(address)));
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
-        } else {
-            stage.setTitle("Aion Wallet Title");
-        }
+        stage.setTitle("Aion Wallet");
         stage.setScene(scene);
         stage.show();
     }
