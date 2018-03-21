@@ -22,6 +22,8 @@ module aion.mcf {
     exports org.aion.mcf.manager;
     exports org.aion.mcf.mine;
     exports org.aion.mcf.serial;
+    exports org.aion.mcf.trie.merkle;
+    exports org.aion.mcf.trie.doublearray;
     exports org.aion.mcf.trie;
     exports org.aion.mcf.tx;
     exports org.aion.mcf.types;
