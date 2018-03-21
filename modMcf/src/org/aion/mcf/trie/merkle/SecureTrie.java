@@ -34,11 +34,11 @@
  ******************************************************************************/
 package org.aion.mcf.trie.merkle;
 
-import static org.aion.base.util.ByteUtil.EMPTY_BYTE_ARRAY;
-import static org.aion.crypto.HashUtil.h256;
-
 import org.aion.base.db.IByteArrayKeyValueStore;
 import org.aion.mcf.trie.Trie;
+
+import static org.aion.base.util.ByteUtil.EMPTY_BYTE_ARRAY;
+import static org.aion.crypto.HashUtil.h256;
 
 public class SecureTrie extends MerkleTrieImpl implements Trie {
 
@@ -63,13 +63,5 @@ public class SecureTrie extends MerkleTrieImpl implements Trie {
     @Override
     public void delete(byte[] key) {
         this.update(key, EMPTY_BYTE_ARRAY);
-    }
-
-    @Override
-    public SecureTrie clone() {
-        this.getCache();
-        this.getRoot();
-
-        return null;
     }
 }
