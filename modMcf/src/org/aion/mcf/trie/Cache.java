@@ -12,7 +12,7 @@ public interface Cache<K, V> {
     void undo();
     Map<K, V> getNodes();
     boolean isDirty();
-    IByteArrayKeyValueStore getDb(); // why ?
+    IByteArrayKeyValueStore getDb();
     void setDB(IByteArrayKeyValueStore kvds);
     int getSize();
     void markRemoved(K key);
