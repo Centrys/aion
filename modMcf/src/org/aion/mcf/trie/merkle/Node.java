@@ -36,6 +36,8 @@ package org.aion.mcf.trie.merkle;
 
 import org.aion.rlp.Value;
 
+import java.util.Objects;
+
 /**
  * A Node in a Merkle Patricia Tree is one of the following:
  * <p>
@@ -104,6 +106,20 @@ public class Node {
 
     public Value getValue() {
         return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Node node = (Node) o;
+        return dirty == node.dirty &&
+                Objects.equals(value, node.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, dirty);
     }
 
     @Override

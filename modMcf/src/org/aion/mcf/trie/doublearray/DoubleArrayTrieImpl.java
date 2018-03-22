@@ -39,7 +39,7 @@ public class DoubleArrayTrieImpl implements Trie {
      * @param listFactory The IntegerListFactory to use for creating
      * 				the storage.
      */
-    private DoubleArrayTrieImpl(IntegerArrayListFactory listFactory) {
+    public DoubleArrayTrieImpl(IntegerArrayListFactory listFactory) {
         init(listFactory);
     }
 

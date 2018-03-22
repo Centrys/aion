@@ -92,7 +92,7 @@ public class MerkleTrieImpl implements Trie {
     @Deprecated
     private Object prevRoot;
     private Object root;
-    private Cache cache;
+    private Cache<ByteArrayWrapper, Node> cache;
 
     private boolean pruningEnabled;
 
@@ -101,7 +101,7 @@ public class MerkleTrieImpl implements Trie {
     }
 
     public MerkleTrieImpl(IByteArrayKeyValueStore db, Object root) {
-        this.cache = new Cache(db);
+        this.cache = new MPCacheImpl(db);
         this.root = root;
         this.prevRoot = root;
     }
@@ -110,11 +110,11 @@ public class MerkleTrieImpl implements Trie {
         return new TrieIterator(this);
     }
 
-    public void setCache(Cache cache) {
+    public void setCache(Cache<ByteArrayWrapper, Node> cache) {
         this.cache = cache;
     }
 
-    public Cache getCache() {
+    public Cache<ByteArrayWrapper, Node> getCache() {
         return this.cache;
     }
 
@@ -194,7 +194,7 @@ public class MerkleTrieImpl implements Trie {
             byte[] k = binToNibbles(key);
 
             if (isEmptyNode(root)) {
-                cache.markRemoved(getRootHash());
+                cache.markRemoved(wrap(getRootHash()));
             }
 
             this.root = this.insertOrDelete(this.root, k, value);
@@ -440,7 +440,7 @@ public class MerkleTrieImpl implements Trie {
 
     private void markRemoved(byte[] hash) {
         if (pruningEnabled) {
-            cache.markRemoved(hash);
+            cache.markRemoved(wrap(hash));
         }
     }
 
@@ -464,7 +464,9 @@ public class MerkleTrieImpl implements Trie {
         } else if (keyBytes.length < 32) {
             return new Value(keyBytes);
         }
-        return this.cache.get(keyBytes);
+
+        Node cachedNode = this.cache.get(wrap(keyBytes));
+        return cachedNode != null ? cachedNode.getValue() : null;
     }
 
     private Object putToCache(Object node) {
@@ -568,7 +570,7 @@ public class MerkleTrieImpl implements Trie {
             }
 
             for (ByteArrayWrapper key : toRemoveSet) {
-                this.getCache().delete(key.getData());
+                this.getCache().delete(wrap(key.getData()));
                 // if (LOG.isTraceEnabled()) {
                 // LOG.trace("Garbage collected node: [{}]",
                 // Hex.toHexString(key.getData()));
@@ -577,15 +579,10 @@ public class MerkleTrieImpl implements Trie {
         }
     }
 
-    public void printFootPrint() {
-
-        this.getCache().getNodes();
-    }
-
     public void scanTree(byte[] hash, ScanAction scanAction) {
         synchronized (cache) {
 
-            Value node = this.getCache().get(hash);
+            Value node = this.getCache().get(wrap(hash)).getValue();
             if (node == null) {
                 throw new RuntimeException("Not found: " + Hex.toHexString(hash));
             }

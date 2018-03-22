@@ -34,30 +34,24 @@
  ******************************************************************************/
 package org.aion.mcf.trie.merkle;
 
-import static org.aion.base.util.ByteArrayWrapper.wrap;
-import static org.aion.rlp.Value.fromRlpEncoded;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 import org.aion.base.db.IByteArrayKeyValueStore;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.crypto.HashUtil;
 import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
-import org.aion.mcf.trie.merkle.Node;
+import org.aion.mcf.trie.Cache;
 import org.aion.rlp.Value;
 import org.slf4j.Logger;
+
+import java.util.*;
+
+import static org.aion.base.util.ByteArrayWrapper.wrap;
+import static org.aion.rlp.Value.fromRlpEncoded;
 
 /**
  * Cache class
  */
-public class Cache {
+public class MPCacheImpl implements Cache<ByteArrayWrapper, Node> {
 
     private static final Logger LOG = AionLoggerFactory.getLogger(LogEnum.DB.name());
 
@@ -66,14 +60,8 @@ public class Cache {
     private Set<ByteArrayWrapper> removedNodes = new HashSet<>();
     private boolean isDirty;
 
-    public Cache(IByteArrayKeyValueStore dataSource) {
+    public MPCacheImpl(IByteArrayKeyValueStore dataSource) {
         this.dataSource = dataSource;
-    }
-
-    public synchronized void markRemoved(byte[] key) {
-        ByteArrayWrapper keyW = new ByteArrayWrapper(key);
-        removedNodes.add(keyW);
-        nodes.remove(keyW);
     }
 
     /**
@@ -100,33 +88,33 @@ public class Cache {
         return value;
     }
 
-    public synchronized Value get(byte[] key) {
-
-        ByteArrayWrapper wrappedKey = wrap(key);
-        Node node = nodes.get(wrappedKey);
+    @Override
+    public Node get(ByteArrayWrapper key) {
+        Node node = nodes.get(key);
         if (node != null) {
             // cachehits++;
-            return node.getValue();
+            return node;
         }
         if (this.dataSource != null) {
-            Optional<byte[]> data = (this.dataSource == null) ? Optional.empty() : this.dataSource.get(key);
+            Optional<byte[]> data = this.dataSource.get(key.getData());
             if (data.isPresent()) {
                 // dbhits++;
                 Value val = fromRlpEncoded(data.get());
-                nodes.put(wrappedKey, new Node(val, false));
-                return val;
+                Node returnValue = new Node(val, false);
+                nodes.put(key, returnValue);
+                return returnValue;
             }
         }
 
         return null;
     }
 
-    public synchronized void delete(byte[] key) {
-        ByteArrayWrapper wrappedKey = wrap(key);
-        this.nodes.remove(wrappedKey);
+    @Override
+    public void delete(ByteArrayWrapper key) {
+        this.nodes.remove(key);
 
         if (dataSource != null) {
-            this.dataSource.delete(key);
+            this.dataSource.delete(key.getData());
         }
     }
 
@@ -249,5 +237,11 @@ public class Cache {
 
     public int getSize() {
         return nodes.size();
+    }
+
+    @Override
+    public void markRemoved(ByteArrayWrapper key) {
+        removedNodes.add(key);
+        nodes.remove(key);
     }
 }

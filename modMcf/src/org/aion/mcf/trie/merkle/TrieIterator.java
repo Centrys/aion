@@ -34,6 +34,7 @@
  ******************************************************************************/
 package org.aion.mcf.trie.merkle;
 
+import static org.aion.base.util.ByteArrayWrapper.wrap;
 import static org.aion.rlp.CompactEncoder.unpackToNibbles;
 
 import java.util.List;
@@ -92,7 +93,7 @@ public class TrieIterator {
     }
 
     private void getNode(byte[] node) {
-        Value currentNode = this.trie.getCache().get(node);
+        Value currentNode = this.trie.getCache().get(wrap(node)).getValue();
         this.workNode(currentNode);
     }
 
@@ -108,7 +109,7 @@ public class TrieIterator {
         List<byte[]> shas = this.collect();
 
         for (byte[] sha : shas) {
-            this.trie.getCache().delete(sha);
+            this.trie.getCache().delete(wrap(sha));
         }
         return this.values.size();
     }
