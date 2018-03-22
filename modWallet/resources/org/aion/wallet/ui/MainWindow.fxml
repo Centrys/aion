@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="850.0" styleClass="main-stage" xmlns="http://javafx.com/javafx/9" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.aion.wallet.ui.MainWindow">
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
+    <children>
+        <AnchorPane prefHeight="91.0" prefWidth="850.0" style="-fx-background-color: #19364e;">
+            <children>
+                <ImageView fitHeight="23.0" fitWidth="23.0" layoutX="813.0" layoutY="14.0" onMousePressed="#shutDown" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@shutdown-26.png" />
+                    </image>
+                </ImageView>
+                <ImageView fitHeight="62.0" fitWidth="63.0" layoutX="394.0" layoutY="18.0" pickOnBounds="true" preserveRatio="true">
+                    <image>
+                        <Image url="@aion_logo_light.png" />
+                    </image>
+                </ImageView>
+                <VBox alignment="CENTER" layoutX="3.0" layoutY="9.0" prefHeight="82.0" prefWidth="100.0">
+                    <children>
+                        <ImageView fitHeight="62.0" fitWidth="63.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@home_light-50.png" />
+                            </image>
+                        </ImageView>
+                        <Label prefHeight="20.0" prefWidth="41.0" styleClass="header-label" text="Home">
+                            <font>
+                                <Font name="System Bold" size="12.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
+        <AnchorPane layoutY="99.0" prefHeight="348.0" prefWidth="850.0" styleClass="anchor-pane">
+            <children>
+                <HBox alignment="CENTER" layoutX="35.0" layoutY="58.0" prefHeight="32.0" prefWidth="252.0">
+                    <children>
+                        <Label prefHeight="23.0" prefWidth="63.0" text="Balance">
+                            <font>
+                                <Font name="System Bold" size="12.0" />
+                            </font>
+                        </Label>
+                        <TextField fx:id="balanceField" editable="false" />
+                    </children>
+                </HBox>
+            </children>
+        </AnchorPane>
+        <AnchorPane layoutY="455.0" prefHeight="46.0" prefWidth="850.0" styleClass="anchor-pane" />
+    </children>
+</AnchorPane>
