@@ -1,4 +1,4 @@
-package org.aion.wallet.ui.header;
+package org.aion.wallet.ui.components;
 
 import javafx.collections.ObservableList;
 import javafx.event.Event;
