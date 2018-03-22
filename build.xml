@@ -269,7 +269,17 @@
 			<property name="compile.debug" value="${compile.debug}" />
 		</ant>
 
-		<echo message="building modWallet" />
+        <echo message="building modAionApi"/>
+        <ant inheritAll="false" antfile="${dir.workspace}/aion_api/build.xml" target="clean_build">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
+        <move todir="${dir.modfile}">
+            <fileset dir="./aion_api/pack">
+                <include name="*.jar"/>
+            </fileset>
+        </move>
+
+        <echo message="building modWallet" />
 		<ant inheritAll="false" antfile="${dir.workspace}/modWallet/build.xml" target="clean_build">
 			<property name="compile.debug" value="${compile.debug}" />
 		</ant>

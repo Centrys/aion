@@ -23,11 +23,6 @@
  ******************************************************************************/
 package org.aion.mcf.config;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.*;
-
 import org.aion.log.LogEnum;
 import org.aion.log.LogLevels;
 
@@ -35,6 +30,11 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author chris
@@ -50,6 +50,7 @@ public class CfgLog {
         modules.put(LogEnum.VM.name(), LogLevels.ERROR.name());
         modules.put(LogEnum.DB.name(), LogLevels.ERROR.name());
         modules.put(LogEnum.SYNC.name(), LogLevels.INFO.name());
+        modules.put(LogEnum.WLT.name(), LogLevels.INFO.name());
     }
 
     public void fromXML(final XMLStreamReader sr) throws XMLStreamException {
