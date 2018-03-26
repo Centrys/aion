@@ -83,7 +83,10 @@
                 <pathelement location="${dir.mod}/modApiServer.jar"/>
                 <pathelement location="${dir.mod}/modAionImpl.jar"/>
                 <pathelement location="${dir.mod}/modAionBase.jar"/>
+                <pathelement location="${dir.mod}/modLogger.jar"/>
                 <pathelement location="${dir.mod}/modMcf.jar"/>
+                <pathelement location="${dir.lib}/slf4j-api-1.7.25.jar"/>
+                <pathelement location="${dir.lib}/guava-19.0.jar"/>
             </modulepath>
         </javac>
         <copy includeemptydirs="false" todir="${dir.dest}">

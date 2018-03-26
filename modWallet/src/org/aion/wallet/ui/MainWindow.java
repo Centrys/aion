@@ -1,58 +1,90 @@
 package org.aion.wallet.ui;
 
+import com.google.common.eventbus.Subscribe;
 import javafx.application.Application;
-import javafx.fxml.FXML;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.aion.api.server.ApiAion;
-import org.aion.base.type.Address;
-import org.aion.wallet.WalletApi;
+import org.aion.log.AionLoggerFactory;
+import org.aion.log.LogEnum;
+import org.aion.wallet.ui.events.EventBusFactory;
+import org.aion.wallet.ui.events.HeaderPaneButtonEvent;
+import org.aion.wallet.ui.events.WindowControlsEvent;
+import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
 
-public class MainWindow extends Application
-        implements Initializable
-{
+public class MainWindow extends Application {
+
+    private static final Logger log = AionLoggerFactory.getLogger(LogEnum.WLT.name());
+
+    private static final String TITLE = "Aion Wallet";
+    private static final String MAIN_WINDOW_FXML = "MainWindow.fxml";
+    private static final String AION_LOGO = "icons/aion_logo.png";
+
     private double xOffset;
     private double yOffset;
-
-    private final ApiAion walletApi = new WalletApi();
-
-    @FXML
-    private TextField balanceField;
+    private Stage stage;
 
     @Override
     public void start(final Stage stage) throws IOException {
+        this.stage = stage;
         stage.initStyle(StageStyle.TRANSPARENT);
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("aion_logo.png")));
+        stage.getIcons().add(new Image(getClass().getResourceAsStream(AION_LOGO)));
 
-        Parent root = FXMLLoader.load(getClass().getResource("MainWindow.fxml"));
+        registerEventBusConsumer();
+
+        Parent root = FXMLLoader.load(getClass().getResource(MAIN_WINDOW_FXML));
         root.setOnMousePressed(this::handleMousePressed);
-        root.setOnMouseDragged(event -> handleMouseDragged(stage, event));
+        root.setOnMouseDragged(this::handleMouseDragged);
 
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         scene.setFill(Color.TRANSPARENT);
 
-        stage.setOnCloseRequest(t -> actionOnClose());
+        stage.setOnCloseRequest(t -> shutDown());
 
-        stage.setTitle("Aion Wallet");
+        stage.setTitle(TITLE);
         stage.setScene(scene);
         stage.show();
+    }
+
+    private void registerEventBusConsumer() {
+        final EventBusFactory eventBusFactory = EventBusFactory.getInstance();
+        eventBusFactory.getBus(WindowControlsEvent.ID).register(this);
+        eventBusFactory.getBus(HeaderPaneButtonEvent.ID).register(this);
+    }
+
+    @Subscribe
+    private void handleWindowControlsEvent(final WindowControlsEvent event) {
+        switch (event.getType()) {
+            case MINIMIZE:
+                minimize(event);
+                break;
+            case CLOSE:
+                shutDown();
+                break;
+        }
+    }
+
+    @Subscribe
+    private void handleHeaderPaneButtonEvent(final HeaderPaneButtonEvent event) {
+        log.debug(event.getType().toString());
+    }
+
+    private void minimize(final WindowControlsEvent event) {
+        ((Stage) event.getSource().getScene().getWindow()).setIconified(true);
+    }
+
+    private void shutDown() {
+        Platform.exit();
+        Executors.newSingleThreadExecutor().submit(() -> System.exit(0));
     }
 
     private void handleMousePressed(final MouseEvent event) {
@@ -60,31 +92,8 @@ public class MainWindow extends Application
         yOffset = event.getSceneY();
     }
 
-    private void handleMouseDragged(final Stage stage, final MouseEvent event) {
+    private void handleMouseDragged(final MouseEvent event) {
         stage.setX(event.getScreenX() - xOffset);
         stage.setY(event.getScreenY() - yOffset);
-    }
-
-    public void shutDown(){
-        actionOnClose();
-    }
-
-    private void actionOnClose() {
-        System.exit(0);
-    }
-
-    @Override
-    public void initialize(final URL location, final ResourceBundle resources) {
-        final List<String> accounts = walletApi.getAccounts();
-        if (!accounts.isEmpty()) {
-            final Address address = Address.wrap(accounts.get(0));
-            try {
-                final BigDecimal balance = new BigDecimal(walletApi.getBalance(address));
-                final BigDecimal decimalPlaces = new BigDecimal(BigInteger.valueOf(1000000000).multiply(BigInteger.valueOf(1000000000)));
-                balanceField.setText(String.valueOf(balance.divide(decimalPlaces, 10, RoundingMode.HALF_EVEN)));
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-            }
-        }
     }
 }
