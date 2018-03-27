@@ -14,5 +14,5 @@
     </AnchorPane>
 
     <fx:include source="components/ContentPane.fxml"/>
-    <AnchorPane layoutY="455.0" prefHeight="46.0" prefWidth="850.0" styleClass="anchor-pane"/>
+    <fx:include source="components/FooterPane.fxml" />
 </AnchorPane>
