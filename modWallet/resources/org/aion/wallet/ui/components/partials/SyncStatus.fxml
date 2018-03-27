@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane layoutX="150.0" prefHeight="46.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/8.0.121">
+    <ProgressBar layoutX="86.0" layoutY="13.0" prefWidth="200.0" progress="0.9" />
+    <Label layoutX="8.0" layoutY="15.0" prefHeight="16.0" prefWidth="78.0" text="Sync status" />
+    <Label id="progressBarLabel" layoutX="117.0" layoutY="15.0" text="How behind is the sync?" textFill="black"/>
+</AnchorPane>
