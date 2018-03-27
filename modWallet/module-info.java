@@ -4,6 +4,7 @@ module aion.wallet{
     requires aion.zero.impl;
     requires aion.log;
     requires aion.base;
+    requires aion.mcf;
     requires javafx.fxml;
     requires javafx.base;
     requires javafx.graphics;
