@@ -27,7 +27,7 @@ public class MainWindow extends Application {
 
     private static final String TITLE = "Aion Wallet";
     private static final String MAIN_WINDOW_FXML = "MainWindow.fxml";
-    private static final String AION_LOGO = "icons/aion_logo.png";
+    private static final String AION_LOGO = "components/icons/aion_logo.png";
 
     private double xOffset;
     private double yOffset;

@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<AnchorPane id="contentPane" layoutY="99.0" prefHeight="348.0" prefWidth="850.0" stylesheets="@contentPane.css"
+<AnchorPane id="contentPane" stylesheets="@contentPane.css"
             xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.aion.wallet.ui.components.ContentPane">
     <Pane layoutX="8.0" prefHeight="348.0" prefWidth="834.0">

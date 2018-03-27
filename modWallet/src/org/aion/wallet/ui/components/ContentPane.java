@@ -1,16 +1,13 @@
 package org.aion.wallet.ui.components;
 
-
 import com.google.common.eventbus.Subscribe;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Popup;
 import org.aion.api.server.ApiAion;
@@ -22,7 +19,6 @@ import org.aion.wallet.util.BalanceFormatter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -36,12 +32,7 @@ public class ContentPane implements Initializable{
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         registerEventBusConsumer();
-        ObservableList<String> accountListViewItems = accountListView.getItems();
-
-        List<String> accounts = aionWallet.getAccounts();
-        for(String account : accounts) {
-            accountListViewItems.add(account + " - " + BalanceFormatter.formatBalance(getAccountBalance(account)));
-        }
+        reloadWalletView();
     }
 
     private void registerEventBusConsumer() {
@@ -51,15 +42,24 @@ public class ContentPane implements Initializable{
 
     @Subscribe
     private void handleHeaderPaneButtonEvent(HeaderPaneButtonEvent event) {
-
+        reloadWalletView();
     }
 
+
     //TODO: the rest of the file has to be moved into it's own component; leaving it for now for functionality
-
     @FXML
-    ListView<String> accountListView;
+    private ListView<String> accountListView;
 
-    ApiAion aionWallet = new WalletApi();
+    private final ApiAion aionWallet = new WalletApi();
+
+    private void reloadWalletView() {
+        ObservableList<String> accountListViewItems = accountListView.getItems();
+        accountListViewItems.clear();
+        List<String> accounts = aionWallet.getAccounts();
+        for(String account : accounts) {
+            accountListViewItems.add(account + " - " + BalanceFormatter.formatBalance(getAccountBalance(account)));
+        }
+    }
     private BigInteger getAccountBalance(String account) {
         BigInteger balance = null;
         try {
