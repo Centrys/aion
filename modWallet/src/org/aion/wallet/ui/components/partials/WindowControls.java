@@ -1,4 +1,4 @@
-package org.aion.wallet.ui.header;
+package org.aion.wallet.ui.components.partials;
 
 import com.google.common.eventbus.EventBus;
 import javafx.fxml.FXML;

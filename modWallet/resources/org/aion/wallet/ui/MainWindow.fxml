@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import java.net.URL?>
 <AnchorPane xmlns="http://javafx.com/javafx/8.0.162" xmlns:fx="http://javafx.com/fxml/1"
             maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
@@ -11,19 +8,11 @@
     <stylesheets>
         <URL value="@style.css"/>
     </stylesheets>
+
     <AnchorPane styleClass="anchor-pane">
-        <fx:include source="header/HeaderPane.fxml"/>
+        <fx:include source="components/HeaderPane.fxml"/>
     </AnchorPane>
 
-    <AnchorPane layoutY="99.0" prefHeight="348.0" prefWidth="850.0" styleClass="anchor-pane">
-        <HBox alignment="CENTER" layoutX="35.0" layoutY="58.0" prefHeight="32.0" prefWidth="252.0">
-            <Label prefHeight="23.0" prefWidth="63.0" text="Balance">
-                <font>
-                    <Font name="System Bold" size="12.0"/>
-                </font>
-            </Label>
-            <TextField editable="false"/>
-        </HBox>
-    </AnchorPane>
+    <fx:include source="components/ContentPane.fxml"/>
     <AnchorPane layoutY="455.0" prefHeight="46.0" prefWidth="850.0" styleClass="anchor-pane"/>
 </AnchorPane>
