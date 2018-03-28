@@ -366,7 +366,7 @@ public class AionBlockchainImpl implements IAionBlockchain {
 
     public static byte[] calcTxTrie(List<AionTransaction> transactions) {
 
-        Trie txsState = new DoubleArrayTrieImpl(null);
+        Trie txsState = new DoubleArrayTrieImpl();
 
         if (transactions == null || transactions.isEmpty()) {
             return HashUtil.EMPTY_TRIE_HASH;
@@ -717,7 +717,7 @@ public class AionBlockchainImpl implements IAionBlockchain {
     }
 
     protected static byte[] calcReceiptsTrie(List<AionTxReceipt> receipts) {
-        Trie receiptsTrie = new DoubleArrayTrieImpl(null);
+        Trie receiptsTrie = new DoubleArrayTrieImpl();
 
         if (receipts == null || receipts.isEmpty()) {
             return HashUtil.EMPTY_TRIE_HASH;

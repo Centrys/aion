@@ -322,7 +322,7 @@ public class AionBlock extends AbstractBlock<A0BlockHeader, AionTransaction> imp
 
     private void parseTxs(RLPList txTransactions) {
 
-        this.txsState = new DoubleArrayTrieImpl(null);
+        this.txsState = new DoubleArrayTrieImpl();
         for (int i = 0; i < txTransactions.size(); i++) {
             RLPElement transactionRaw = txTransactions.get(i);
             this.transactionsList.add(new AionTransaction(transactionRaw.getRLPData()));
