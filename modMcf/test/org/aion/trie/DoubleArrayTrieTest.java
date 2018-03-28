@@ -174,7 +174,7 @@ public class DoubleArrayTrieTest {
         }
 
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {
-            trie.update(entry.getKey().getBytes(), "".getBytes());
+            trie.delete(entry.getKey().getBytes());
         }
 
         for (Map.Entry<String, String> entry : sampleDataMap.entrySet()) {

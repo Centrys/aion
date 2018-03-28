@@ -34,6 +34,7 @@ import org.aion.base.util.ByteUtil;
 import org.aion.base.util.Hex;
 import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
+import org.aion.mcf.trie.doublearray.DoubleArrayTrieImpl;
 import org.aion.rlp.RLP;
 import org.aion.rlp.RLPElement;
 import org.aion.rlp.RLPList;
@@ -321,7 +322,7 @@ public class AionBlock extends AbstractBlock<A0BlockHeader, AionTransaction> imp
 
     private void parseTxs(RLPList txTransactions) {
 
-        this.txsState = new MerkleTrieImpl(null);
+        this.txsState = new DoubleArrayTrieImpl(null);
         for (int i = 0; i < txTransactions.size(); i++) {
             RLPElement transactionRaw = txTransactions.get(i);
             this.transactionsList.add(new AionTransaction(transactionRaw.getRLPData()));

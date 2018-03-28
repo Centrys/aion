@@ -56,11 +56,7 @@ public class DoubleArrayTrieImpl implements Trie {
         int transition; // The candidate for the transition end state
         int i			= 0; // The input string index
         int current; // The current input character
-
-        SearchState result = new SearchState();  // The search result
         byte[] keyNibbles = binToNibbles(key);
-        result.prefix = keyNibbles;
-        result.result = SearchResult.PURE_PREFIX; // The default value
 
         // For every input character
         while (i < keyNibbles.length) {
@@ -72,31 +68,20 @@ public class DoubleArrayTrieImpl implements Trie {
                 if (getBase(transition) == LEAF_BASE_VALUE) {
                     // We reached a leaf. There are two possibilities:
                     if (i == keyNibbles.length - 1) {
-                        // The string has been exhausted. Return perfect match
-                        result.result = SearchResult.PERFECT_MATCH;
                         return cache.get(transition);
                     } else {
-                        // The string still has more to go. Return not found.
-                        result.result = SearchResult.NOT_FOUND;
                         break;
                     }
                 }
                 state = transition; //  ...switch and continue
             }
             else {
-                // The candidate does not belong to the current state. Not found.
-                result.result = SearchResult.NOT_FOUND;
                 break;
             }
 
-            updateSearch(state, i, keyNibbles);
             i++;
         }
 
-        updateSearch(state, i, keyNibbles);
-        result.finishedAtState = state;
-        result.index = i;
-        //return result;
         return null;
     }
 
@@ -167,14 +152,6 @@ public class DoubleArrayTrieImpl implements Trie {
                 propagate(transition);
             }
 
-            /*
-             * There is another case that is the default and always executed
-             * by the if above. That is simply transition through the DFA
-             * and advance the string index. This is done after we notify
-             * for the transition event.
-             */
-            //TODO @Robert this does nothing as of now
-            // updateInsert(state, i-1, keyNibbles);
             state = transition;
             i++;
         }
@@ -187,7 +164,7 @@ public class DoubleArrayTrieImpl implements Trie {
      *         - any length byte array
      */
     public void delete(byte[] key) {
-
+        update(key, "".getBytes());
     }
 
     public byte[] getRootHash() {
@@ -317,7 +294,6 @@ public class DoubleArrayTrieImpl implements Trie {
             assert getBase(newLocation + c) == EMPTY_VALUE;
             setBase(newLocation + c, getBase(getBase(s) + c));
 
-            //TODO @Robert test this separately
             if(getBase(getBase(s) + c) == LEAF_BASE_VALUE ) {
                 byte[] oldValue = cache.get(s);
                 cache.remove(getBase(s) + c);
@@ -378,15 +354,7 @@ public class DoubleArrayTrieImpl implements Trie {
         // moved or updated. That which remains is for the state s to show
         // to its new children
         setBase(s, newLocation);
-        updateStateMove(s, newLocation);
     }
-
-    // Event management methods. Delegated to subclasses.
-
-
-
-
-    // Storage management methods. Delegated to subclasses.
 
     /**
      * Returns the value of the base array at <tt>position</tt>.
@@ -534,38 +502,6 @@ public class DoubleArrayTrieImpl implements Trie {
         }
     }
 
-    /**
-     * Utility class to represent the necessary state after the end
-     * of a search. The walking algorithm besides deciding on the
-     * search result outcome is also useful to find the last valid
-     * index of an input string. This class represents just that.
-     */
-    protected static class SearchState {
-        /**
-         * The searched for string
-         */
-        byte[] prefix;
-
-        /**
-         * The index within the prefix string that the search ended.
-         * If it was exhausted without reaching a leaf node it is
-         * equal to prefix.size()
-         */
-        protected int index;
-
-        /**
-         * The index in the base array of the state at which the
-         * walking algorithm concluded.
-         */
-        int finishedAtState;
-
-        /**
-         * The result of the search. It is also reproducible by
-         * the other fields of this class.
-         */
-        protected SearchResult result;
-    }
-
     protected void init(IntegerArrayListFactory listFactory) {
         base = listFactory.getNewIntegerList();
         check = listFactory.getNewIntegerList();
@@ -575,8 +511,6 @@ public class DoubleArrayTrieImpl implements Trie {
         check.add(ROOT_CHECK_VALUE);
         freePositions = new TreeSet<>();
     }
-
-
 
     /**
      * Finds consecutive free positions in the trie.
@@ -626,31 +560,6 @@ public class DoubleArrayTrieImpl implements Trie {
         }
     }
 
-
-    /**
-     * For every state transition during a search, this method is called to
-     * inform implementations of the fact and do their housekeeping.
-     *
-     * @param state The index in the base array the transition is at
-     * @param stringIndex The index of the search string for which the event occurred
-     * @param searchString The search string
-     */
-    private void updateSearch(int state, int stringIndex, byte[] searchString) {
-        // No op
-    }
-
-    /**
-     * For every state transition during an insertion, this method is called to
-     * inform implementations of the fact and do their housekeeping.
-     *
-     * @param state The index in the base array the transition is at
-     * @param stringIndex The index of the inserted string for which the event occurred
-     * @param insertString The inserted string
-     */
-    protected void updateInsert(int state, int stringIndex, byte[] insertString) {
-        // No op
-    }
-
     /**
      * After a state conflict, each children of the parent state is moved to a
      * new location. For each such event, this method is called with all
@@ -665,18 +574,6 @@ public class DoubleArrayTrieImpl implements Trie {
     private void updateChildMove(int parentIndex, int forCharacter,
                                  int newParentBase) {
         assert getCheck(getBase(parentIndex) + forCharacter) == parentIndex;
-    }
-
-    /**
-     * After a state conflict and after the moved state's children have been themselves moved,
-     * the base of the state must change. This method is called AFTER this change happens and
-     * after all children have been moved
-     *
-     * @param stateIndex The index of the state whose base is changed
-     * @param newBase The new base value for the state
-     */
-    private void updateStateMove(int stateIndex, int newBase) {
-        // No op
     }
 
     @Override
