@@ -37,6 +37,7 @@ import org.aion.db.impl.h2.H2MVMap;
 import org.aion.db.impl.leveldb.LevelDB;
 import org.aion.db.impl.leveldb.LevelDBConstants;
 import org.aion.db.impl.mockdb.MockDB;
+import org.aion.db.impl.redisdb.RedisDBWrapper;
 import org.aion.db.impl.rocksdb.RocksDBConstants;
 import org.aion.db.impl.rocksdb.RocksDBWrapper;
 import org.aion.log.AionLoggerFactory;
@@ -126,7 +127,7 @@ public abstract class DatabaseFactory {
             return new LockedDatabase(connectWithCache(info));
         } else {
             DBVendor vendor = DBVendor.fromString(info.getProperty(Props.DB_TYPE));
-            if (vendor == DBVendor.LEVELDB || vendor == DBVendor.ROCKSDB) {
+            if (vendor == DBVendor.LEVELDB || vendor == DBVendor.ROCKSDB || vendor == DBVendor.REDISDB) {
                 return new SpecialLockedDatabase(connectBasic(info));
             } else {
                 return new LockedDatabase(connectBasic(info));
@@ -201,6 +202,9 @@ public abstract class DatabaseFactory {
             }
             case H2: {
                 return new H2MVMap(dbName, dbPath, enableDbCache, enableDbCompression);
+            }
+            case REDISDB: {
+                return new RedisDBWrapper(dbName, dbPath, enableDbCache, enableDbCompression);
             }
             default:
                 break;
