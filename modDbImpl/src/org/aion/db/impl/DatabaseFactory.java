@@ -33,6 +33,7 @@ import org.aion.db.generic.DatabaseWithCache;
 import org.aion.db.generic.LockedDatabase;
 import org.aion.db.generic.SpecialLockedDatabase;
 import org.aion.db.generic.TimedDatabase;
+import org.aion.db.impl.redisdb.RedisDbWrapper;
 import org.aion.db.impl.h2.H2MVMap;
 import org.aion.db.impl.leveldb.LevelDB;
 import org.aion.db.impl.leveldb.LevelDBConstants;
@@ -203,6 +204,9 @@ public abstract class DatabaseFactory {
             }
             case H2: {
                 return new H2MVMap(dbName, dbPath, enableDbCache, enableDbCompression);
+            }
+            case REDISDB: {
+                return new RedisDbWrapper(dbName, dbPath, enableDbCache, enableDbCompression);
             }
             default:
                 break;
