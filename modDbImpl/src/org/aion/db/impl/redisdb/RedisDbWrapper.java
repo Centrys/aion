@@ -10,57 +10,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class RedisDbWrapper extends AbstractDB {
-
     private JedisPool pool;
-    private Pipeline batch;
-
-    //TODO @Robert extract these to the config maybe???
-
-    public static final String BLOCK = "block";
-    public static final String INDEX = "index";
-
-    public static final String DETAILS = "details";
-    public static final String STORAGE = "storage";
-
-    public static final String STATE = "state";
-    public static final String TRANSACTION = "transaction";
-
-    public static final String TX_CACHE = "pendingtxCache";
-    public static final String TX_POOL = "pendingtxPool";
 
     public RedisDbWrapper(String name, String path, boolean enableDbCache, boolean enableDbCompression) {
         super(name, path, enableDbCache, enableDbCompression);
-        // each db should have it's own separate redis Server and we should find a way to pass these details along
-
-        switch(name) {
-            case BLOCK:
-                pool = new JedisPool("localhost", 7000);
-                break;
-            case INDEX:
-                pool = new JedisPool("localhost", 7001);
-                break;
-            case DETAILS:
-                pool = new JedisPool("localhost", 7002);
-                break;
-            case STORAGE:
-                pool = new JedisPool("localhost", 7003);
-                break;
-            case STATE:
-                pool = new JedisPool("localhost", 7004);
-                break;
-            case TRANSACTION:
-                pool = new JedisPool("localhost", 7005);
-                break;
-            case TX_CACHE:
-                pool = new JedisPool("localhost", 7006);
-                break;
-            case TX_POOL:
-                pool = new JedisPool("localhost", 7007);
-                break;
-            default:
-                pool = new JedisPool("localhost", 7008);
-                break;
-        }
+        pool = RedisDBConstants.getDb(name);
     }
 
     @Override
@@ -70,14 +24,13 @@ public class RedisDbWrapper extends AbstractDB {
 
             for (Map.Entry<ByteArrayWrapper, byte[]> e : cache.entrySet()) {
                 if (e.getValue() == null) {
-                    tmpBatch.del(new String(e.getKey().getData(), "ISO-8859-1"));
+                    tmpBatch.del(new String(e.getKey().getData(), RedisDBConstants.CHARSET));
                 } else {
-                    tmpBatch.set(new String(e.getKey().getData(), "ISO-8859-1"), new String(e.getValue() , "ISO-8859-1"));
+                    tmpBatch.set(new String(e.getKey().getData(), RedisDBConstants.CHARSET), new String(e.getValue() , RedisDBConstants.CHARSET));
                 }
             }
 
             tmpBatch.sync();
-
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -88,9 +41,9 @@ public class RedisDbWrapper extends AbstractDB {
     @Override
     protected byte[] getInternal(byte[] key) {
         try(Jedis db = pool.getResource()) {
-            String value = db.get(new String(key, "ISO-8859-1"));
+            String value = db.get(new String(key, RedisDBConstants.CHARSET));
             if(value != null){
-                return value.getBytes("ISO-8859-1");
+                return value.getBytes(RedisDBConstants.CHARSET);
             }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -142,7 +95,7 @@ public class RedisDbWrapper extends AbstractDB {
         try(Jedis db = pool.getResource()) {
             Set<String> keysAsString = db.keys("*");
             for(String key : keysAsString){
-                set.add(key.getBytes("ISO-8859-1"));
+                set.add(key.getBytes(RedisDBConstants.CHARSET));
             }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -157,7 +110,7 @@ public class RedisDbWrapper extends AbstractDB {
         check();
 
         try(Jedis db = pool.getResource()) {
-            db.set(new String(key, "ISO-8859-1"), new String(value, "ISO-8859-1"));
+            db.set(new String(key, RedisDBConstants.CHARSET), new String(value, RedisDBConstants.CHARSET));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -171,7 +124,7 @@ public class RedisDbWrapper extends AbstractDB {
         check();
 
         try(Jedis db = pool.getResource()) {
-            db.del(new String(key, "ISO-8859-1"));
+            db.del(new String(key, RedisDBConstants.CHARSET));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -192,9 +145,9 @@ public class RedisDbWrapper extends AbstractDB {
                 byte[] value = e.getValue();
 
                 if (value == null) {
-                    tmpBatch.del(new String(key, "ISO-8859-1"));
+                    tmpBatch.del(new String(key, RedisDBConstants.CHARSET));
                 } else {
-                    tmpBatch.set(new String(key, "ISO-8859-1"), new String(value, "ISO-8859-1"));
+                    tmpBatch.set(new String(key, RedisDBConstants.CHARSET), new String(value, RedisDBConstants.CHARSET));
                 }
             }
 
@@ -208,18 +161,13 @@ public class RedisDbWrapper extends AbstractDB {
     @Override
     public void putToBatch(byte[] key, byte[] value) {
         check(key);
-
         check();
 
         try(Jedis db = pool.getResource()){
-            if(batch == null) {
-                batch = db.pipelined();
-            }
-
             if (value == null) {
-                batch.del(new String(key, "ISO-8859-1"));
+                db.del(new String(key, RedisDBConstants.CHARSET));
             } else {
-                batch.set(new String(key, "ISO-8859-1"), new String(value, "ISO-8859-1"));
+                db.set(new String(key, RedisDBConstants.CHARSET), new String(value, RedisDBConstants.CHARSET));
             }
 
         } catch (UnsupportedEncodingException e) {
@@ -229,11 +177,7 @@ public class RedisDbWrapper extends AbstractDB {
 
     @Override
     public void commitBatch() {
-        try(Jedis db = pool.getResource()) {
-            if(batch != null) {
-                batch.sync();
-            }
-        }
+        // not using batch here
     }
 
     @Override
@@ -246,7 +190,7 @@ public class RedisDbWrapper extends AbstractDB {
             Pipeline tmpBatch = db.pipelined();
 
             for(byte[] key: keys) {
-                tmpBatch.del(new String(key, "ISO-8859-1"));
+                tmpBatch.del(new String(key, RedisDBConstants.CHARSET));
             }
 
             tmpBatch.sync();
