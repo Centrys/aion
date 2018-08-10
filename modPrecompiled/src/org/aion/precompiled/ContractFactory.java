@@ -28,6 +28,7 @@ import org.aion.base.vm.IDataWord;
 import org.aion.mcf.core.AccountState;
 import org.aion.mcf.db.IBlockStoreBase;
 import org.aion.precompiled.contracts.ATB.TokenBridgeContract;
+import org.aion.precompiled.contracts.EDVerifyContract;
 import org.aion.vm.ExecutionContext;
 import org.aion.vm.IPrecompiledContract;
 import org.aion.precompiled.contracts.TotalCurrencyContract;
@@ -41,6 +42,8 @@ public class ContractFactory {
 
     private static final String TOKEN_BRIDGE = "0000000000000000000000000000000000000000000000000000000000000200";
     private static final String TOKEN_BRIDGE_INITIAL_OWNER = "a048613dd3cb89685cb3f9cfa410ecf606c7ec7320e721edacd194050828c6b0";
+
+    private static final String ED_VERIFY = "0000000000000000000000000000000000000000000000000000000000000010";
 
     private ContractFactory(){}
 
@@ -61,6 +64,8 @@ public class ContractFactory {
                 TokenBridgeContract contract = new TokenBridgeContract(context,
                         track, Address.wrap(TOKEN_BRIDGE_INITIAL_OWNER), Address.wrap(TOKEN_BRIDGE));
                 return contract;
+            case ED_VERIFY:
+                return new EDVerifyContract();
             default: return null;
         }
     }
@@ -87,5 +92,12 @@ public class ContractFactory {
     public static Address getTotalCurrencyContractAddress() {
         return Address.wrap(TOTAL_CURRENCY);
     }
+
+    /**
+     * Returns the address of the EdVerifyContract contract.
+     *
+     * @return the contract address
+     */
+    public static Address getEdVerifyContractAddress() { return Address.wrap(ED_VERIFY); }
 
 }
