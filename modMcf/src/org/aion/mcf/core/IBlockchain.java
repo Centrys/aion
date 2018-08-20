@@ -22,14 +22,14 @@
  */
 package org.aion.mcf.core;
 
-import java.util.List;
-import org.aion.base.type.Address;
 import org.aion.base.type.IBlock;
 import org.aion.base.type.ITransaction;
 import org.aion.mcf.blockchain.IGenericChain;
 import org.aion.mcf.types.AbstractBlockHeader;
 import org.aion.mcf.types.AbstractBlockSummary;
 import org.aion.mcf.types.AbstractTxReceipt;
+
+import java.util.List;
 
 /**
  * Blockchain interface.
@@ -50,6 +50,8 @@ public interface IBlockchain<
         extends IGenericChain<BLK, BH> {
 
     long getSize();
+
+    BLK createNewBlock(BLK parent, List<TX> transactions, boolean waitUntilBlockTime);
 
     AbstractBlockSummary add(BLK block);
 
