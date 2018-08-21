@@ -17,25 +17,19 @@
  *     along with the aion network project source files.
  *     If not, see <https://www.gnu.org/licenses/>.
  *
- *
  * Contributors:
  *     Aion foundation.
  *
  ******************************************************************************/
-package org.aion.mcf.core;
 
-import java.math.BigInteger;
+package org.aion.zero.impl.blockchain;
 
-import org.aion.mcf.types.AbstractBlockHeader;
+import org.aion.mcf.mine.IMineRunner;
+import org.aion.zero.impl.core.IAionBlockchain;
 
 /**
- * Calculates the rewards given for sealing a particular block, depending
- * on the implementation we may be able to swap different difficulty
- * implementations.
- *
- * @author yao
+ * Chain instance pow interface.
  */
-@FunctionalInterface
-public interface IRewardsCalculator {
-    BigInteger calculateReward(AbstractBlockHeader header);
+public interface IChainInstancePOW extends IAionChain{
+    IMineRunner getBlockMiner();
 }

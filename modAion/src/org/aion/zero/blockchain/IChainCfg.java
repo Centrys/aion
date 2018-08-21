@@ -22,16 +22,32 @@
  *
  ******************************************************************************/
 
-package org.aion.mcf.blockchain;
+package org.aion.zero.blockchain;
 
-import org.aion.mcf.mine.IMineRunner;
+import org.aion.base.type.IBlock;
+import org.aion.base.type.ITransaction;
+import org.aion.mcf.blockchain.IBlockConstants;
+import org.aion.zero.core.IDifficultyCalculator;
+import org.aion.zero.core.IRewardsCalculator;
+import org.aion.mcf.valid.BlockHeaderValidator;
+import org.aion.mcf.valid.ParentBlockHeaderValidator;
 
 /**
- * Chain instance pow interface.
+ * Chain configuration interface.
  */
-public interface IChainInstancePOW extends IChainInstanceBase {
+public interface IChainCfg<Blk extends IBlock<?, ?>, Tx extends ITransaction> {
 
-    IPowChain<?, ?> getBlockchain();
+    boolean acceptTransactionSignature(Tx tx);
 
-    IMineRunner getBlockMiner();
+    IBlockConstants getConstants();
+
+    IBlockConstants getCommonConstants();
+
+    IDifficultyCalculator getDifficultyCalculator();
+
+    IRewardsCalculator getRewardsCalculator();
+
+    BlockHeaderValidator createBlockHeaderValidator();
+
+    ParentBlockHeaderValidator createParentHeaderValidator();
 }
