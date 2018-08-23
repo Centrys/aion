@@ -1,6 +1,7 @@
 package org.aion.api.server.http;
 
 import org.aion.api.server.rpc.RpcProcessor;
+import org.aion.generic.IGenericAionChain;
 import org.aion.zero.impl.config.CfgAion;
 
 import java.io.File;
@@ -23,7 +24,7 @@ public abstract class RpcServer {
     // want to explicitly force user of this class to check for null value here.
     private Integer workerPoolSize;
 
-    protected RpcServer(RpcServerBuilder<?> builder) {
+    protected RpcServer(IGenericAionChain aionChain, RpcServerBuilder<?> builder) {
         // everything exposed by the builder is immutable, except for the List<String> & char[] sslCertPass
         // 1. List<String> enabledEndpoints - defensively copy
         // 2. char[] sslCertPass - we want to mutate it later ourselves, so store original reference
@@ -35,7 +36,7 @@ public abstract class RpcServer {
         corsOrigin = builder.corsOrigin;
 
         List<String> enabledEndpoints = Collections.unmodifiableList(Objects.requireNonNull(builder.enabledEndpoints));
-        rpcProcessor = new RpcProcessor(enabledEndpoints);
+        rpcProcessor = new RpcProcessor(aionChain, enabledEndpoints);
 
         sslEnabled = builder.sslEnabled;
         if (sslEnabled) {
