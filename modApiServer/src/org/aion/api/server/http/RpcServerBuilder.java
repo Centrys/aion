@@ -19,7 +19,7 @@ public abstract class RpcServerBuilder<T extends RpcServerBuilder<T>> {
     // but I personally like to avoid the visual clutter of accessors
     String hostName;
     Integer port;
-    IGenericAionChain aionChain;
+    protected IGenericAionChain aionChain;
 
     boolean corsEnabled = false;
     String corsOrigin = "*";
@@ -71,6 +71,11 @@ public abstract class RpcServerBuilder<T extends RpcServerBuilder<T>> {
     public T setWorkerPoolSize(Integer workerPoolSize) {
         this.workerPoolSize = workerPoolSize;
 
+        return self();
+    }
+
+    public T withAionChain(IGenericAionChain aionChain) {
+        this.aionChain = aionChain;
         return self();
     }
 
