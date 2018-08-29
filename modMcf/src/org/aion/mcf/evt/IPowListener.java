@@ -20,22 +20,42 @@
  *
  * Contributors:
  *     Aion foundation.
- *
+
  ******************************************************************************/
-package org.aion.zero.core;
+package org.aion.mcf.evt;
 
-import java.math.BigInteger;
+import java.util.List;
 
-import org.aion.mcf.types.AbstractBlockHeader;
+import org.aion.base.type.IBlock;
+import org.aion.base.type.ITransaction;
+import org.aion.base.type.ITxExecSummary;
+
+import org.aion.mcf.evt.IListenerBase;
+import org.aion.mcf.types.AbstractBlockSummary;
+import org.aion.mcf.types.AbstractTxReceipt;
 
 /**
- * Calculates the rewards given for sealing a particular block, depending
- * on the implementation we may be able to swap different difficulty
- * implementations.
+ * POW listener interface.
  *
- * @author yao
+ * @param <BLK>
+ * @param <TX>
+ * @param <TXR>
+ * @param <BS>
  */
-@FunctionalInterface
-public interface IRewardsCalculator {
-    BigInteger calculateReward(AbstractBlockHeader header);
+public interface IPowListener<BLK extends IBlock<?, ?>, TX extends ITransaction, TXR extends AbstractTxReceipt<?>, BS extends AbstractBlockSummary<?, ?, ?, ?>>
+        extends IListenerBase<BLK, TX, TXR, BS> {
+    void onBlock(BS blockSummary);
+
+    void onPeerDisconnect(String host, long port);
+
+    void onPendingTransactionsReceived(List<TX> transactions);
+
+    void onSyncDone();
+
+    void onNoConnections();
+
+    void onVMTraceCreated(String transactionHash, String trace);
+
+    void onTransactionExecuted(ITxExecSummary summary);
+
 }

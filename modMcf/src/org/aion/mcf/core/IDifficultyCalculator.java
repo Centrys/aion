@@ -17,37 +17,26 @@
  *     along with the aion network project source files.
  *     If not, see <https://www.gnu.org/licenses/>.
  *
+ *
  * Contributors:
  *     Aion foundation.
  *
  ******************************************************************************/
+package org.aion.mcf.core;
 
-package org.aion.zero.blockchain;
+import java.math.BigInteger;
 
-import org.aion.base.type.IBlock;
-import org.aion.base.type.ITransaction;
-import org.aion.mcf.blockchain.IBlockConstants;
-import org.aion.zero.core.IDifficultyCalculator;
-import org.aion.zero.core.IRewardsCalculator;
-import org.aion.mcf.valid.BlockHeaderValidator;
-import org.aion.mcf.valid.ParentBlockHeaderValidator;
+import org.aion.mcf.types.IPowBlockHeader;
 
 /**
- * Chain configuration interface.
+ * Interface for retrieving difficulty calculations for a particular
+ * chain configuration, note that depending on where the corresponding
+ * class is generated, it will utilized different algorithms. However the
+ * common interface of the current and parent blockHeader will remain.
+ *
+ * @author yao
  */
-public interface IChainCfg<Blk extends IBlock<?, ?>, Tx extends ITransaction> {
-
-    boolean acceptTransactionSignature(Tx tx);
-
-    IBlockConstants getConstants();
-
-    IBlockConstants getCommonConstants();
-
-    IDifficultyCalculator getDifficultyCalculator();
-
-    IRewardsCalculator getRewardsCalculator();
-
-    BlockHeaderValidator createBlockHeaderValidator();
-
-    ParentBlockHeaderValidator createParentHeaderValidator();
+@FunctionalInterface
+public interface IDifficultyCalculator {
+    BigInteger calculateDifficulty(IPowBlockHeader current, IPowBlockHeader dependency);
 }

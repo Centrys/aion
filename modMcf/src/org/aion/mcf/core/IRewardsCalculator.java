@@ -17,34 +17,25 @@
  *     along with the aion network project source files.
  *     If not, see <https://www.gnu.org/licenses/>.
  *
+ *
  * Contributors:
  *     Aion foundation.
  *
  ******************************************************************************/
+package org.aion.mcf.core;
 
-package org.aion.mcf.blockchain;
+import java.math.BigInteger;
 
-import org.aion.base.type.IBlock;
-import org.aion.base.type.IBlockIdentifier;
-import org.aion.mcf.core.AbstractTxInfo;
-import org.aion.mcf.db.IBlockStoreBase;
 import org.aion.mcf.types.AbstractBlockHeader;
 
 /**
- * Generic Chain interface.
+ * Calculates the rewards given for sealing a particular block, depending
+ * on the implementation we may be able to swap different difficulty
+ * implementations.
+ *
+ * @author yao
  */
-public interface IGenericChain<BLK extends IBlock, BH extends AbstractBlockHeader> {
-
-    BLK getBlockByNumber(long number);
-
-    BLK getBlockByHash(byte[] hash);
-
-    IBlockStoreBase<?, ?> getBlockStore();
-
-    BLK getBestBlock();
-
-    AbstractTxInfo getTransactionInfo(byte[] hash);
-
-    void flush();
-
+@FunctionalInterface
+public interface IRewardsCalculator {
+    BigInteger calculateReward(AbstractBlockHeader header);
 }

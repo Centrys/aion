@@ -17,45 +17,31 @@
  *     along with the aion network project source files.
  *     If not, see <https://www.gnu.org/licenses/>.
  *
- *
  * Contributors:
  *     Aion foundation.
-
+ *
  ******************************************************************************/
-package org.aion.zero.evt;
 
-import java.util.List;
+package org.aion.mcf.blockchain;
 
 import org.aion.base.type.IBlock;
 import org.aion.base.type.ITransaction;
-import org.aion.base.type.ITxExecSummary;
-
-import org.aion.mcf.evt.IListenerBase;
-import org.aion.mcf.types.AbstractBlockSummary;
-import org.aion.mcf.types.AbstractTxReceipt;
+import org.aion.mcf.blockchain.IBlockConstants;
+import org.aion.mcf.valid.BlockHeaderValidator;
+import org.aion.mcf.valid.ParentBlockHeaderValidator;
 
 /**
- * POW listener interface.
- *
- * @param <BLK>
- * @param <TX>
- * @param <TXR>
- * @param <BS>
+ * Chain configuration interface.
  */
-public interface IPowListener<BLK extends IBlock<?, ?>, TX extends ITransaction, TXR extends AbstractTxReceipt<?>, BS extends AbstractBlockSummary<?, ?, ?, ?>>
-        extends IListenerBase<BLK, TX, TXR, BS> {
-    void onBlock(BS blockSummary);
+public interface IChainCfg<Blk extends IBlock<?, ?>, Tx extends ITransaction> {
 
-    void onPeerDisconnect(String host, long port);
+    boolean acceptTransactionSignature(Tx tx);
 
-    void onPendingTransactionsReceived(List<TX> transactions);
+    IBlockConstants getConstants();
 
-    void onSyncDone();
+    IBlockConstants getCommonConstants();
 
-    void onNoConnections();
+    BlockHeaderValidator createBlockHeaderValidator();
 
-    void onVMTraceCreated(String transactionHash, String trace);
-
-    void onTransactionExecuted(ITxExecSummary summary);
-
+    ParentBlockHeaderValidator createParentHeaderValidator();
 }
