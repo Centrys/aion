@@ -23,6 +23,7 @@
  ******************************************************************************/
 package org.aion.api.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.aion.mcf.account.AccountManager;
 import org.aion.mcf.account.Keystore;
 import org.aion.api.server.types.CompiContrInfo;
@@ -35,7 +36,7 @@ import org.aion.log.LogEnum;
 import org.aion.solidity.Abi;
 import org.aion.solidity.CompilationResult;
 import org.aion.solidity.Compiler;
-import org.aion.zero.impl.blockchain.NonceMgr;
+import org.aion.zero.impl.blockchain.AionPendingStateImpl;
 import org.aion.mcf.types.AbstractBlock;
 import org.slf4j.Logger;
 
@@ -50,27 +51,17 @@ public abstract class Api<B extends AbstractBlock<?, ?>> {
 
     private final AccountManager ACCOUNT_MANAGER = AccountManager.inst();
     private final Compiler solc = Compiler.getInstance();
-    protected final NonceMgr nm = NonceMgr.inst();
+    protected final AionPendingStateImpl pendingState;
 
-    public long parseBnOrId(String _bnOrId) {
-        if ("earliest".equalsIgnoreCase(_bnOrId)) {
-            return 0;
-        } else if ("latest".equalsIgnoreCase(_bnOrId)) {
-            return getBestBlock().getNumber();
-        } else if ("pending".equalsIgnoreCase(_bnOrId)) {
-            return -1;
-        } else {
-            try {
-                if (_bnOrId.startsWith("0x")) {
-                    return TypeConverter.StringHexToBigInteger(_bnOrId).longValue();
-                } else {
-                    return Long.parseLong(_bnOrId);
-                }
-            } catch (NumberFormatException e) {
-                LOG.debug("err on parsing block number #" + _bnOrId);
-                return 0;
-            }
-        }
+    // This is the constructor that should always be used, unless testing
+    Api() {
+        pendingState = AionPendingStateImpl.inst();
+    }
+
+    // Only for testing purposes
+    @VisibleForTesting
+    Api(AionPendingStateImpl ps) {
+            pendingState = ps;
     }
 
     public abstract String getCoinbase();
@@ -130,6 +121,14 @@ public abstract class Api<B extends AbstractBlock<?, ?>> {
             Compiler.Result res = solc.compile(_contract.getBytes(), Compiler.Options.ABI, Compiler.Options.BIN);
             if (res.isFailed()) {
                 LOG.info("contract compile error: [{}]", res.errors);
+
+                /**
+                 * Enhance performance by separating the log threads and kernel
+                 * TODO: Implement a queue for strings
+                 * TODO: Put every LOG message onto the queue
+                 * TODO: Use a thread service to process these message
+                 */
+
                 CompiledContr ret = new CompiledContr();
                 ret.error = res.errors;
                 compiledContracts.put("compile-error", ret);

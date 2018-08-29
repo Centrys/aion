@@ -1,4 +1,4 @@
-/*******************************************************************************
+/* ******************************************************************************
  * Copyright (c) 2017-2018 Aion foundation.
  *
  *     This file is part of the aion network project.
@@ -34,97 +34,73 @@
  ******************************************************************************/
 package org.aion.zero.impl.db;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import java.math.BigInteger;
+import java.util.Optional;
+import java.util.Properties;
 import org.aion.base.db.IByteArrayKeyValueDatabase;
 import org.aion.base.db.IContractDetails;
+import org.aion.base.db.IPruneConfig;
+import org.aion.base.db.IRepository;
 import org.aion.base.db.IRepositoryCache;
 import org.aion.base.db.IRepositoryConfig;
 import org.aion.base.type.Address;
 import org.aion.base.util.ByteUtil;
-import org.aion.mcf.core.AccountState;
 import org.aion.crypto.HashUtil;
 import org.aion.db.impl.DBVendor;
+import org.aion.db.impl.DatabaseFactory;
+import org.aion.mcf.config.CfgPrune;
+import org.aion.mcf.core.AccountState;
 import org.aion.mcf.db.IBlockStoreBase;
 import org.aion.mcf.vm.types.DataWord;
+import org.aion.zero.db.AionContractDetailsImpl;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.aion.zero.db.AionContractDetailsImpl;
-import org.aion.zero.impl.db.AionRepositoryImpl;
-import org.aion.zero.impl.db.ContractDetailsAion;
-
-import java.math.BigInteger;
-import java.util.Optional;
-
-import static com.google.common.truth.Truth.assertThat;
-
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AionRepositoryImplTest {
 
-    protected IRepositoryConfig repoConfig = new IRepositoryConfig() {
-        @Override
-        public String[] getVendorList() {
-            return new String[] { DBVendor.MOCKDB.toValue() };
-        }
+    protected IRepositoryConfig repoConfig =
+            new IRepositoryConfig() {
+                @Override
+                public String getDbPath() {
+                    return "";
+                }
 
-        @Override
-        public String getActiveVendor() {
-            return DBVendor.MOCKDB.toValue();
-        }
+                @Override
+                public IPruneConfig getPruneConfig() {
+                    return new CfgPrune(false);
+                }
 
-        @Override
-        public String getDbPath() {
-            return "";
-        }
+                @Override
+                public IContractDetails contractDetailsImpl() {
+                    return ContractDetailsAion.createForTesting(0, 1000000).getDetails();
+                }
 
-        @Override
-        public int getPrune() {
-            return 0;
-        }
+                @Override
+                public Properties getDatabaseConfig(String db_name) {
+                    Properties props = new Properties();
+                    props.setProperty(DatabaseFactory.Props.DB_TYPE, DBVendor.MOCKDB.toValue());
+                    props.setProperty(DatabaseFactory.Props.ENABLE_HEAP_CACHE, "false");
+                    return props;
+                }
+            };
 
-        @Override
-        public IContractDetails contractDetailsImpl() {
-            return ContractDetailsAion.createForTesting(0, 1000000).getDetails();
-        }
-
-        @Override
-        public boolean isAutoCommitEnabled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDbCacheEnabled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDbCompressionEnabled() {
-            return false;
-        }
-
-        @Override
-        public boolean isHeapCacheEnabled() {
-            return true;
-        }
-
-        @Override
-        public String getMaxHeapCacheSize() {
-            return "0";
-        }
-
-        @Override
-        public boolean isHeapCacheStatsEnabled() {
-            return false;
-        }
-
-    };
+    private static String value1 =
+            "CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3";
+    private static String value2 =
+            "CAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFE";
+    private static String value3 =
+            "BEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEF";
 
     @Test
     public void testAccountStateUpdate() {
         AionRepositoryImpl repository = AionRepositoryImpl.createForTesting(repoConfig);
         byte[] originalRoot = repository.getRoot();
 
-        Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes("CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3"));
+        Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes(value1));
 
         IRepositoryCache track = repository.startTracking();
         track.addBalance(defaultAccount, BigInteger.valueOf(1));
@@ -142,7 +118,7 @@ public class AionRepositoryImplTest {
         AionRepositoryImpl repository = AionRepositoryImpl.createForTesting(repoConfig);
         IRepositoryCache track = repository.startTracking();
 
-        Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes("CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3"));
+        Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes(value1));
         track.addBalance(defaultAccount, BigInteger.valueOf(1));
 
         byte[] originalRoot = repository.getRoot();
@@ -163,7 +139,7 @@ public class AionRepositoryImplTest {
         AionRepositoryImpl repository = AionRepositoryImpl.createForTesting(repoConfig);
         IRepositoryCache track = repository.startTracking();
 
-        Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes("CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3"));
+        Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes(value1));
         track.addBalance(defaultAccount, BigInteger.valueOf(1));
 
         // Consider the original root the one after an account has been added
@@ -174,7 +150,8 @@ public class AionRepositoryImplTest {
 
         track.flush();
 
-        byte[] retrievedValue = repository.getStorageValue(defaultAccount, new DataWord(key)).getNoLeadZeroesData();
+        byte[] retrievedValue =
+                repository.getStorageValue(defaultAccount, new DataWord(key)).getNoLeadZeroesData();
         assertThat(retrievedValue).isEqualTo(value);
 
         byte[] newRoot = repository.getRoot();
@@ -188,7 +165,7 @@ public class AionRepositoryImplTest {
         AionRepositoryImpl repository = AionRepositoryImpl.createForTesting(repoConfig);
         IRepositoryCache track = repository.startTracking();
 
-        Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes("CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3"));
+        Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes(value1));
         track.addBalance(defaultAccount, BigInteger.valueOf(1));
 
         // Consider the original root the one after an account has been added
@@ -202,9 +179,7 @@ public class AionRepositoryImplTest {
 
         repository.flush();
 
-        /**
-         * Verify that the account has been flushed
-         */
+        /** Verify that the account has been flushed */
         IByteArrayKeyValueDatabase detailsDB = repository.getDetailsDatabase();
         Optional<byte[]> serializedDetails = detailsDB.get(defaultAccount.toBytes());
 
@@ -215,20 +190,18 @@ public class AionRepositoryImplTest {
         assertThat(details.get(new DataWord(key))).isEqualTo(new DataWord(value));
     }
 
-    /**
-     * Repo track test suite
-     */
-
+    /** Repo track test suite */
 
     /**
-     * This test confirms that updates done on the repo track are successfully translated
-     * into the root repository.
+     * This test confirms that updates done on the repo track are successfully translated into the
+     * root repository.
      */
     @Test
     public void testRepoTrackUpdateStorageRow() {
         final AionRepositoryImpl repository = AionRepositoryImpl.createForTesting(repoConfig);
-        final IRepositoryCache<AccountState,DataWord,IBlockStoreBase<?, ?>> repoTrack = repository.startTracking();
-        final Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes("CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3CAF3"));
+        final IRepositoryCache<AccountState, DataWord, IBlockStoreBase<?, ?>> repoTrack =
+                repository.startTracking();
+        final Address defaultAccount = Address.wrap(ByteUtil.hexStringToBytes(value1));
         final byte[] key = HashUtil.blake128("hello".getBytes());
         final byte[] value = HashUtil.blake128("world".getBytes());
 
@@ -238,29 +211,24 @@ public class AionRepositoryImplTest {
 
         repoTrack.addStorageRow(defaultAccount, new DataWord(key), new DataWord(value));
 
-        DataWord retrievedStorageValue = repoTrack.getStorageValue(defaultAccount, new DataWord(key));
+        DataWord retrievedStorageValue =
+            (DataWord) repoTrack.getStorageValue(defaultAccount, new DataWord(key));
         assertThat(retrievedStorageValue).isEqualTo(new DataWord(value));
 
         // commit changes, then check that the root has updated
         repoTrack.flush();
 
-        assertThat(repository.getStorageValue(defaultAccount, new DataWord(key))).isEqualTo(retrievedStorageValue);
+        assertThat(repository.getStorageValue(defaultAccount, new DataWord(key)))
+                .isEqualTo(retrievedStorageValue);
 
         final byte[] newRoot = repository.getRoot();
         assertThat(newRoot).isNotEqualTo(originalRoot);
     }
 
-    /**
-     * Tests behaviour for trie when trying to revert to a previous root without
-     * first flushing. Note the behaviour here. Interestingly enough, it seems like
-     * the trie must first be flushed, so that the root node is in the caching/db layer.
-     *
-     * Otherwise the retrieval methods will not be able to find the temporal root value.
-     */
     @Test
     public void testSyncToPreviousRootNoFlush() {
-        final Address FIRST_ACC = Address.wrap("CAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFE");
-        final Address SECOND_ACC = Address.wrap("BEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEFBEEF");
+        final Address FIRST_ACC = Address.wrap(value2);
+        final Address SECOND_ACC = Address.wrap(value3);
 
         final AionRepositoryImpl repository = AionRepositoryImpl.createForTesting(repoConfig);
         byte[] originalRoot = repository.getRoot();
@@ -272,6 +240,10 @@ public class AionRepositoryImplTest {
 
         System.out.println("after first account added");
         System.out.println(repository.getWorldState().getTrieDump());
+
+        // check the update on the repo
+        BigInteger balance = repository.getBalance(FIRST_ACC);
+        assertThat(balance).isEqualTo(BigInteger.ONE);
 
         byte[] firstRoot = repository.getRoot();
 
@@ -287,18 +259,21 @@ public class AionRepositoryImplTest {
         assertThat(firstRoot).isNotEqualTo(originalRoot);
         assertThat(secondRoot).isNotEqualTo(firstRoot);
 
+        System.out.println("after sync to after first account added");
         repository.syncToRoot(firstRoot);
+        assertThat(repository.isValidRoot(firstRoot)).isTrue();
+        System.out.println(repository.getWorldState().getTrieDump());
 
         assertThat(repository.getRoot()).isEqualTo(firstRoot);
-        BigInteger balance = repository.getBalance(FIRST_ACC);
+        balance = repository.getBalance(FIRST_ACC);
 
         // notice that the first blocks balance is also zero
-        assertThat(balance).isEqualTo(BigInteger.ZERO);
+        assertThat(balance).isEqualTo(BigInteger.ONE);
     }
 
     @Test
     public void testSyncToPreviousRootWithFlush() {
-        final Address FIRST_ACC = Address.wrap("CAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFECAFE");
+        final Address FIRST_ACC = Address.wrap(value2);
         AionRepositoryImpl repository = AionRepositoryImpl.createForTesting(repoConfig);
 
         byte[] originalRoot = repository.getRoot();
@@ -361,5 +336,65 @@ public class AionRepositoryImplTest {
 
         repository.syncToRoot(root);
         assertThat(repository.getBalance(DOG_ACC)).isEqualTo(BigInteger.ONE);
+    }
+
+    @Test
+    public void testGetSnapshotToRoot() {
+        AionRepositoryImpl repository = AionRepositoryImpl.createForTesting(repoConfig);
+
+        // make some changes to the repository
+        final Address account1 = Address.wrap(value1);
+        final Address account2 = Address.wrap(value2);
+        final Address account3 = Address.wrap(value3);
+        IRepositoryCache track = repository.startTracking();
+        track.addBalance(account1, BigInteger.ONE);
+        track.addBalance(account2, BigInteger.TWO);
+        track.addBalance(account3, BigInteger.TEN);
+        track.flush();
+        repository.flush();
+
+        // get snapshot to root
+        IRepository snapshot = repository.getSnapshotTo(repository.getRoot());
+
+        // check that the same values are retrieved
+        assertThat(repository.getBalance(account1)).isEqualTo(snapshot.getBalance(account1));
+        assertThat(repository.getBalance(account2)).isEqualTo(snapshot.getBalance(account2));
+        assertThat(repository.getBalance(account3)).isEqualTo(snapshot.getBalance(account3));
+
+        // make more changes to the initial repo
+        track = repository.startTracking();
+        track.addBalance(account1, BigInteger.TWO);
+        track.addBalance(account2, BigInteger.TWO);
+        track.addBalance(account3, BigInteger.TWO);
+        track.flush();
+
+        // check that the values from the repo are larger
+        assertThat(repository.getBalance(account1)).isGreaterThan(snapshot.getBalance(account1));
+        assertThat(repository.getBalance(account2)).isGreaterThan(snapshot.getBalance(account2));
+        assertThat(repository.getBalance(account3)).isGreaterThan(snapshot.getBalance(account3));
+
+        // make the same changes to the snapshot
+        track = snapshot.startTracking();
+        track.addBalance(account1, BigInteger.TWO);
+        track.addBalance(account2, BigInteger.TWO);
+        track.addBalance(account3, BigInteger.TWO);
+        track.flush();
+
+        // check that the values are again equal
+        assertThat(repository.getBalance(account1)).isEqualTo(snapshot.getBalance(account1));
+        assertThat(repository.getBalance(account2)).isEqualTo(snapshot.getBalance(account2));
+        assertThat(repository.getBalance(account3)).isEqualTo(snapshot.getBalance(account3));
+
+        // make more changes on the snapshot
+        track = snapshot.startTracking();
+        track.addBalance(account1, BigInteger.TEN);
+        track.addBalance(account2, BigInteger.TEN);
+        track.addBalance(account3, BigInteger.TEN);
+        track.flush();
+
+        // check that the values from the snapshot are larger
+        assertThat(repository.getBalance(account1)).isLessThan(snapshot.getBalance(account1));
+        assertThat(repository.getBalance(account2)).isLessThan(snapshot.getBalance(account2));
+        assertThat(repository.getBalance(account3)).isLessThan(snapshot.getBalance(account3));
     }
 }

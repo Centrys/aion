@@ -1,29 +1,29 @@
 /*
  * Copyright (c) 2017-2018 Aion foundation.
  *
- * This file is part of the aion network project.
+ *     This file is part of the aion network project.
  *
- * The aion network project is free software: you can redistribute it
- * and/or modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation, either version 3 of
- * the License, or any later version.
+ *     The aion network project is free software: you can redistribute it
+ *     and/or modify it under the terms of the GNU General Public License
+ *     as published by the Free Software Foundation, either version 3 of
+ *     the License, or any later version.
  *
- * The aion network project is distributed in the hope that it will
- * be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
+ *     The aion network project is distributed in the hope that it will
+ *     be useful, but WITHOUT ANY WARRANTY; without even the implied
+ *     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *     See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with the aion network project source files.
- * If not, see <https://www.gnu.org/licenses/>.
+ *     You should have received a copy of the GNU General Public License
+ *     along with the aion network project source files.
+ *     If not, see <https://www.gnu.org/licenses/>.
  *
- * Contributors to the aion source files in decreasing order of code volume:
- *
- * Aion foundation.
- *
+ * Contributors:
+ *     Aion foundation.
  */
 
 package org.aion.p2p.impl.zero.msg;
+
+import static org.aion.p2p.impl1.P2pMgr.p2pLOG;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -50,15 +50,15 @@ public final class ReqHandshake1 extends ReqHandshake {
     private static final int MIN_LEN = LEN + 2;
 
     /**
-     *
-     * @param _nodeId byte[36]
+     *  @param _nodeId byte[36]
      * @param _netId int
      * @param _ip byte[8]
      * @param _port int
      * @param _revision String
      * @param _versions List<byte[2]> header contains 2 byte version
      */
-    public ReqHandshake1(final byte[] _nodeId, int _netId, final byte[] _ip, int _port, final byte[] _revision, final List<Short> _versions) {
+    public ReqHandshake1(final byte[] _nodeId, int _netId, final byte[] _ip, int _port,
+        final byte[] _revision, final List<Short> _versions) {
         super(_nodeId, _netId, _ip, _port);
         this.revision = _revision;
         this.versions = _versions.subList(0, Math.min(MAX_VERSIONS_LEN, _versions.size()));
@@ -77,36 +77,43 @@ public final class ReqHandshake1 extends ReqHandshake {
         if (_bytes == null || _bytes.length < MIN_LEN)
             return null;
         else {
-            ByteBuffer buf = ByteBuffer.wrap(_bytes);
+            try{
+                ByteBuffer buf = ByteBuffer.wrap(_bytes);
 
-            // decode node id
-            byte[] nodeId = new byte[36];
-            buf.get(nodeId);
+                // decode node id
+                byte[] nodeId = new byte[36];
+                buf.get(nodeId);
 
-            // decode net id
-            int netId = buf.getInt();
+                // decode net id
+                int netId = buf.getInt();
 
-            // decode ip
-            byte[] ip = new byte[8];
-            buf.get(ip);
+                // decode ip
+                byte[] ip = new byte[8];
+                buf.get(ip);
 
-            // decode port
-            int port = buf.getInt();
+                // decode port
+                int port = buf.getInt();
 
-            // decode revision
-            byte revisionLen = buf.get();
-            byte[] revision = new byte[revisionLen];
-            buf.get(revision);
+                // decode revision
+                byte revisionLen = buf.get();
+                byte[] revision = new byte[revisionLen];
+                buf.get(revision);
 
-            // decode versions
-            byte versionsLen = buf.get();
-            List<Short> versions = new ArrayList<>();
-            for(byte i = 0; i < versionsLen; i++){
-                short version = buf.getShort();
-                versions.add(version);
+                // decode versions
+                byte versionsLen = buf.get();
+                List<Short> versions = new ArrayList<>();
+                for(byte i = 0; i < versionsLen; i++){
+                    short version = buf.getShort();
+                    versions.add(version);
+                }
+
+                return new ReqHandshake1(nodeId, netId, ip, port, revision, versions);
+            } catch (Exception e) {
+                if (p2pLOG.isDebugEnabled()) {
+                    p2pLOG.debug("req-handshake-decode error={}", e.getMessage());
+                }
+                return null;
             }
-
-            return new ReqHandshake1(nodeId, netId, ip, port, revision, versions);
         }
     }
 
@@ -131,5 +138,4 @@ public final class ReqHandshake1 extends ReqHandshake {
             return buf.array();
         }
     }
-
 }

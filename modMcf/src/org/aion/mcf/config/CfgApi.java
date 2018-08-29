@@ -23,6 +23,8 @@
  ******************************************************************************/
 package org.aion.mcf.config;
 
+import com.google.common.base.Objects;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -36,14 +38,25 @@ import java.io.Writer;
  */
 public final class CfgApi {
 
+    private CfgApiZmq zmq;
+    private CfgApiRpc rpc;
+    private CfgApiNrg nrg;
+
     public CfgApi() {
         this.rpc = new CfgApiRpc();
         this.zmq = new CfgApiZmq();
+        this.nrg = new CfgApiNrg();
     }
 
-    private CfgApiZmq zmq;
-
-    private CfgApiRpc rpc;
+    public CfgApiRpc getRpc() {
+        return this.rpc;
+    }
+    public CfgApiZmq getZmq() {
+        return this.zmq;
+    }
+    public CfgApiNrg getNrg() {
+        return this.nrg;
+    }
 
     public void fromXML(final XMLStreamReader sr) throws XMLStreamException {
         loop:
@@ -57,6 +70,9 @@ public final class CfgApi {
                     break;
                 case "rpc":
                     this.rpc.fromXML(sr);
+                    break;
+                case "nrg-recommendation":
+                    this.nrg.fromXML(sr);
                     break;
                 default:
                     Cfg.skipElement(sr);
@@ -82,6 +98,7 @@ public final class CfgApi {
 
             xmlWriter.writeCharacters(this.rpc.toXML());
             xmlWriter.writeCharacters(this.zmq.toXML());
+            xmlWriter.writeCharacters(this.nrg.toXML());
 
             xmlWriter.writeCharacters("\r\n\t");
             xmlWriter.writeEndElement();
@@ -97,12 +114,18 @@ public final class CfgApi {
         }
     }
 
-    public CfgApiRpc getRpc() {
-        return this.rpc;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CfgApi cfgApi = (CfgApi) o;
+        return Objects.equal(zmq, cfgApi.zmq) &&
+                Objects.equal(rpc, cfgApi.rpc) &&
+                Objects.equal(nrg, cfgApi.nrg);
     }
 
-    public CfgApiZmq getZmq() {
-        return this.zmq;
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(zmq, rpc, nrg);
     }
-
 }

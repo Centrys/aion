@@ -25,9 +25,10 @@
 
 package org.aion.mcf.config;
 
+import org.aion.mcf.types.AbstractBlock;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import org.aion.mcf.types.AbstractBlock;
 
 /**
  * @author chris
@@ -57,6 +58,10 @@ public abstract class Cfg {
     protected CfgLog log;
 
     protected CfgTx tx;
+
+    protected CfgReports reports;
+
+    protected CfgGui gui;
 
     public void setId(final String _id){
         this.id = _id;
@@ -114,8 +119,25 @@ public abstract class Cfg {
         return this.tx;
     }
 
+    public CfgReports getReports() {
+        return this.reports;
+    }
+
+    public CfgGui getGui() {
+        return this.gui;
+    }
+
     public String[] getNodes() {
         return this.net.getNodes();
+    }
+
+
+    public CfgConsensus getConsensus() {
+        return this.consensus;
+    }
+
+    public void setConsensus(CfgConsensus _consensus) {
+        this.consensus = _consensus;
     }
 
     /**

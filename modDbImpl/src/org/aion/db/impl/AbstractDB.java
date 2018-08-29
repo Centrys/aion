@@ -1,4 +1,4 @@
-/*******************************************************************************
+/* ******************************************************************************
  * Copyright (c) 2017-2018 Aion foundation.
  *
  *     This file is part of the aion network project.
@@ -34,19 +34,16 @@
  ******************************************************************************/
 package org.aion.db.impl;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Stream;
 import org.aion.base.db.IByteArrayKeyValueDatabase;
 import org.aion.base.util.ByteArrayWrapper;
 import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
 import org.slf4j.Logger;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Common functionality for database implementations.
@@ -58,10 +55,8 @@ public abstract class AbstractDB implements IByteArrayKeyValueDatabase {
 
     protected static final Logger LOG = AionLoggerFactory.getLogger(LogEnum.DB.name());
 
-    protected final ReadWriteLock lock = new ReentrantReadWriteLock();
-
     protected static final int DEFAULT_CACHE_SIZE_BYTES = 128 * 1024 * 1024; // 128mb
-    protected static final int DEFAULT_WRITE_BUFFER_SIZE_BYTES = 10 * 1024 * 1024; // 10mb
+    protected static final int DEFAULT_WRITE_BUFFER_SIZE_BYTES = 16 * 1024 * 1024; // 16mb
 
     protected final String name;
     protected String path = null;
@@ -73,7 +68,8 @@ public abstract class AbstractDB implements IByteArrayKeyValueDatabase {
         this.name = name;
     }
 
-    protected AbstractDB(String name, String path, boolean enableDbCache, boolean enableDbCompression) {
+    protected AbstractDB(
+            String name, String path, boolean enableDbCache, boolean enableDbCompression) {
         this(name);
 
         Objects.requireNonNull(path, "The database path cannot be null.");
@@ -84,17 +80,22 @@ public abstract class AbstractDB implements IByteArrayKeyValueDatabase {
     }
 
     protected String propertiesInfo() {
-        return "<name=" + name + ",autocommit=ON,cache=" + (enableDbCache ? "ON" : "OFF") + //
-                ",compression=" + (enableDbCompression ? "ON" : "OFF") + ">"; //
+        return "<name="
+                + name
+                + ",autocommit=ON,cache="
+                + (enableDbCache ? "ON" : "OFF")
+                + //
+                ",compression="
+                + (enableDbCompression ? "ON" : "OFF")
+                + ">"; //
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public boolean commit() {
-        // not implemented since we always commit the changes to the database for this implementation
-        throw new UnsupportedOperationException("Only automatic commits are supported by " + this.toString());
+        // not implemented since we always commit the changes to the database for this
+        // implementation
+        throw new UnsupportedOperationException(
+                "Only automatic commits are supported by " + this.toString());
     }
 
     @Override
@@ -102,75 +103,67 @@ public abstract class AbstractDB implements IByteArrayKeyValueDatabase {
         LOG.warn("Compact not supported by " + this.toString() + ".");
     }
 
-    /**
-     * @inheritDoc
-     */
+    @Override
+    public void drop() {
+        close();
+
+        try (Stream<Path> stream = Files.walk(new File(path).toPath())) {
+            stream.map(Path::toFile).forEach(File::delete);
+        } catch (Exception e) {
+            LOG.error("Unable to delete path due to: ", e);
+        }
+
+        open();
+    }
+
     @Override
     public Optional<String> getName() {
         return Optional.ofNullable(this.name);
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public Optional<String> getPath() {
         return Optional.ofNullable(this.path);
     }
 
-    /**
-     * Checks that the database connection is open.
-     * Throws a {@link RuntimeException} if the database connection is closed.
-     *
-     * @implNote Always do this check after acquiring a lock on the class/data.
-     *         Otherwise it might produce inconsistent results due to lack of synchronization.
-     */
-    protected void check() {
+    @Override
+    public void check() {
         if (!isOpen()) {
             throw new RuntimeException("Database is not opened: " + this);
         }
     }
 
     /**
-     * Checks that the given key is not null.
-     * Throws a {@link IllegalArgumentException} if the key is null.
+     * Checks that the given key is not null. Throws a {@link IllegalArgumentException} if the key
+     * is null.
      */
-    protected static void check(byte[] k) {
+    public static void check(byte[] k) {
         if (k == null) {
             throw new IllegalArgumentException("The database does not accept null keys.");
         }
     }
 
     /**
-     * Checks that the given collection of keys does not contain null values.
-     * Throws a {@link IllegalArgumentException} if a null key is present.
+     * Checks that the given collection of keys does not contain null values. Throws a {@link
+     * IllegalArgumentException} if a null key is present.
      */
-    protected static void check(Collection<byte[]> keys) {
+    public static void check(Collection<byte[]> keys) {
         if (keys.contains(null)) {
             throw new IllegalArgumentException("The database does not accept null keys.");
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public boolean isClosed() {
         return !isOpen();
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public boolean isAutoCommitEnabled() {
         // autocommit is always enabled when not overwritten by the class
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public boolean isPersistent() {
         // always persistent when not overwritten by the class
@@ -178,60 +171,38 @@ public abstract class AbstractDB implements IByteArrayKeyValueDatabase {
     }
 
     /**
-     * For testing the lock functionality of public methods.
-     * Helps ensure that locks are released after normal or exceptional execution.
+     * For testing the lock functionality of public methods. Helps ensure that locks are released
+     * after normal or exceptional execution.
      *
-     * @return {@code true} when the resource is locked,
-     *         {@code false} otherwise
+     * @return {@code true} when the resource is locked, {@code false} otherwise
      */
     @Override
     public boolean isLocked() {
-        // being able to acquire a write lock means that the resource is not locked
-        // only one write lock can be taken at a time, also excluding any concurrent read locks
-        if (lock.writeLock().tryLock()) {
-            lock.writeLock().unlock();
-            return false;
-        } else {
-            return true;
-        }
+        return false;
     }
 
-    /**
-     * Functionality for directly interacting with the heap cache.
-     */
+    /** Functionality for directly interacting with the heap cache. */
     public abstract boolean commitCache(Map<ByteArrayWrapper, byte[]> cache);
 
-    // IKeyValueStore functionality ------------------------------------------------------------------------------------
+    // IKeyValueStore functionality
+    // ------------------------------------------------------------------------------------
 
-    /**
-     * @inheritDoc
-     */
     @Override
     public Optional<byte[]> get(byte[] k) {
         check(k);
 
-        // acquire read lock
-        lock.readLock().lock();
+        check();
 
-        byte[] v;
-
-        try {
-            check();
-
-            v = getInternal(k);
-        } finally {
-            // releasing read lock
-            lock.readLock().unlock();
-        }
+        byte[] v = getInternal(k);
 
         return Optional.ofNullable(v);
     }
 
     /**
-     * Database specific get functionality, without locking required. Locking is applied in {@link #get(byte[])}.
+     * Database specific get functionality, without locking required. Locking is applied in {@link
+     * #get(byte[])}.
      *
-     * @param k
-     *         the key for which the method must return the associated value
+     * @param k the key for which the method must return the associated value
      * @return the value stored in the database for the give key.
      */
     protected abstract byte[] getInternal(byte[] k);

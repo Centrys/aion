@@ -23,36 +23,24 @@
  ******************************************************************************/
 package org.aion.mcf.blockchain;
 
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Map;
-
 import org.aion.base.db.IRepositoryCache;
 import org.aion.base.type.Address;
 import org.aion.base.type.ITransaction;
 
+import java.math.BigInteger;
+import java.util.List;
+
 public interface IPendingState<TX extends ITransaction> {
-
-    IRepositoryCache<?, ?, ?> getRepository();
-
-    List<TX> getPendingTransactions();
 
     List<TX> addPendingTransactions(List<TX> transactions);
 
     List<TX> addPendingTransaction(TX tx);
 
-    /**
-     * get the first transaction nonce of the given account inside the txpool
-     *
-     * @param addr
-     *         account address
-     * @return transaction nonce.
-     * @jay
-     */
-    Map.Entry<BigInteger, BigInteger> bestNonceSet(Address addr);
+    IRepositoryCache<?, ?, ?> getRepository();
 
-    BigInteger bestPoolNonce(Address addr);
+    List<TX> getPendingTransactions();
 
-    BigInteger bestNonce(Address addr);
+    BigInteger bestPendingStateNonce(Address addr);
 
+    String getVersion();
 }

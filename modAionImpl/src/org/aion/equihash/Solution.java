@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2017-2018 Aion foundation.
  *
  *     This file is part of the aion network project.
@@ -19,65 +19,40 @@
  *
  * Contributors:
  *     Aion foundation.
- *     
- ******************************************************************************/
+ */
 package org.aion.equihash;
 
 import org.aion.base.type.ISolution;
 import org.aion.zero.types.IAionBlock;
 
 /**
- * This class encapsulates a valid solution for the given block. This class
- * allows solutions to be passed between classes as needed.
+ * This class encapsulates a valid solution for the given block. This class allows solutions to be
+ * passed between classes as needed.
  *
  * @author Ross Kitsis (ross@nuco.io)
- *
  */
-
 public class Solution implements ISolution {
 
-    private IAionBlock block;
-    private byte[] nonce;
-    private byte[] solution;
-    private long timeStamp;
+    private final IAionBlock block;
+    private final byte[] nonce;
+    private final byte[] solution;
 
-    public Solution(IAionBlock block, byte[] nonce, byte[] solution, long timeStamp) {
+    public Solution(IAionBlock block, byte[] nonce, byte[] solution) {
 
         this.block = block;
         this.nonce = nonce;
         this.solution = solution;
-        this.timeStamp = timeStamp;
     }
 
     public IAionBlock getBlock() {
         return block;
     }
 
-    public void setBlock(IAionBlock block) {
-        this.block = block;
-    }
-
     public byte[] getNonce() {
         return nonce;
     }
 
-    public void setNonce(byte[] nonce) {
-        this.nonce = nonce;
-    }
-
     public byte[] getSolution() {
         return solution;
-    }
-
-    public void setSolution(byte[] solution) {
-        this.solution = solution;
-    }
-
-    public long getTimeStamp() {
-        return timeStamp;
-    }
-
-    public void setTimeStamp(long timeStamp) {
-        this.timeStamp = timeStamp;
     }
 }
