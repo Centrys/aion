@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2017-2018 Aion foundation.
  *
  *     This file is part of the aion network project.
@@ -18,28 +18,30 @@
  *     If not, see <https://www.gnu.org/licenses/>.
  *
  * Contributors:
- *     Aion foundation.
- ******************************************************************************/
-package org.aion.mcf.config;
+ *     Centrys Inc. <https://centrys.io>
+ */
+package org.aion.mcf.consensus;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import org.aion.base.type.IBlock;
+import org.aion.base.type.ITransaction;
+import org.aion.mcf.core.ImportResult;
 
-public abstract class CfgConsensus {
+import java.util.List;
 
-    private ConsensusType consensusType;
+public interface IConsensus<BLK extends IBlock, TX extends ITransaction> {
+    BLK create(BLK parent, List<TX> transactions);
+    /**
+     * Try to append a new block to the blockchain
+     */
+    ImportResult append(BLK block);
 
-    public CfgConsensus(ConsensusType consensusType) {
-        this.consensusType = consensusType;
-    }
+    /**
+     * Validate a new block
+     */
+    Boolean validate(BLK block);
 
-    public abstract void fromXML(final XMLStreamReader sr) throws XMLStreamException;
-
-    public ConsensusType getConsensusType() {
-        return consensusType;
-    }
-
-    public enum ConsensusType {
-        POW
-    }
+    /**
+     * Propagate a newly appended block to connected peers
+     */
+    void propagateNewBlock(BLK block);
 }

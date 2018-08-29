@@ -22,7 +22,7 @@
  *     
  ******************************************************************************/
 
-package org.aion.zero.impl.query;
+package org.aion.generic.query;
 
 import java.util.Optional;
 

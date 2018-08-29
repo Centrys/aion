@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2017-2018 Aion foundation.
  *
  *     This file is part of the aion network project.
@@ -18,28 +18,16 @@
  *     If not, see <https://www.gnu.org/licenses/>.
  *
  * Contributors:
- *     Aion foundation.
- ******************************************************************************/
-package org.aion.mcf.config;
+ *     Centrys Inc. <https://centrys.io>
+ */
+package org.aion.mcf.consensus.strategy;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import org.aion.base.type.IBlock;
+import org.aion.mcf.core.ImportResult;
 
-public abstract class CfgConsensus {
-
-    private ConsensusType consensusType;
-
-    public CfgConsensus(ConsensusType consensusType) {
-        this.consensusType = consensusType;
-    }
-
-    public abstract void fromXML(final XMLStreamReader sr) throws XMLStreamException;
-
-    public ConsensusType getConsensusType() {
-        return consensusType;
-    }
-
-    public enum ConsensusType {
-        POW
-    }
+public interface IBlockAppenderStrategy<BLK extends IBlock> {
+    /**
+     * @return a new AionBlock
+     */
+    ImportResult execute(BLK block);
 }

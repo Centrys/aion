@@ -19,27 +19,11 @@
  *
  * Contributors:
  *     Aion foundation.
+ *     
  ******************************************************************************/
-package org.aion.mcf.config;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+package org.aion.generic.query;
 
-public abstract class CfgConsensus {
 
-    private ConsensusType consensusType;
-
-    public CfgConsensus(ConsensusType consensusType) {
-        this.consensusType = consensusType;
-    }
-
-    public abstract void fromXML(final XMLStreamReader sr) throws XMLStreamException;
-
-    public ConsensusType getConsensusType() {
-        return consensusType;
-    }
-
-    public enum ConsensusType {
-        POW
-    }
+public interface QueryInterface extends BlockQueryInterface, SyncQueryInterface, StateQueryInterface {
 }
