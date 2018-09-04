@@ -46,15 +46,15 @@ import org.aion.evtmgr.impl.evt.EventBlock;
 import org.aion.evtmgr.impl.evt.EventTx;
 import org.aion.generic.IGenericAionChain;
 import org.aion.mcf.core.AbstractTxInfo;
+import org.aion.mcf.core.IBlockchain;
+import org.aion.mcf.types.AbstractTransaction;
 import org.aion.mcf.types.AbstractTxReceipt;
 import org.aion.zero.impl.AionGenesis;
 import org.aion.zero.impl.BlockContext;
 import org.aion.zero.impl.Version;
 import org.aion.zero.impl.blockchain.AionPendingStateImpl;
-import org.aion.zero.impl.blockchain.IAionChain;
 import org.aion.zero.impl.blockchain.IChainInstancePOW;
 import org.aion.zero.impl.config.CfgAion;
-import org.aion.zero.impl.core.IAionBlockchain;
 import org.aion.zero.impl.db.AionBlockStore;
 import org.aion.zero.impl.types.AionBlock;
 import org.aion.zero.impl.types.AionBlockSummary;
@@ -102,6 +102,7 @@ public abstract class ApiAion extends Api {
     protected EventExecuteService ees;
 
     public ApiAion(final IGenericAionChain _ac) {
+        super(_ac);
         this.ac = _ac;
         this.installedFilters = new ConcurrentHashMap<>();
         this.fltrIndex = new AtomicLong(0);
@@ -460,8 +461,7 @@ public abstract class ApiAion extends Api {
      *  TODO: refactor to be more generic or move to concrete Api implementation
      */
     protected byte[] doCall(ArgTxCall _params) {
-        AionTransaction tx =
-                new AionTransaction(
+        ITransaction tx = this.ac.getTransactionFactory().createTransaction(
                         _params.getNonce().toByteArray(),
                         _params.getTo(),
                         _params.getValue().toByteArray(),
@@ -477,9 +477,9 @@ public abstract class ApiAion extends Api {
      *  TODO: refactor to be more generic or move to concrete Api implementation
      */
     protected long estimateNrg(ArgTxCall params) {
-        AionTransaction tx = new AionTransaction(params.getNonce().toByteArray(), params.getFrom(), params.getTo(),
+        ITransaction tx = this.ac.getTransactionFactory().createTransaction(params.getNonce().toByteArray(), params.getFrom(), params.getTo(),
                 params.getValue().toByteArray(), params.getData(), params.getNrg(), params.getNrgPrice());
-        AionTxReceipt receipt = (AionTxReceipt) this.ac.callConstant(tx, this.ac.getAionHub().getBlockchain().getBestBlock());
+        AbstractTxReceipt receipt = this.ac.callConstant(tx, this.ac.getAionHub().getBlockchain().getBestBlock());
         return receipt.getEnergyUsed();
     }
 
@@ -509,8 +509,7 @@ public abstract class ApiAion extends Api {
                                             .bestPendingStateNonce(Address.wrap(key.getAddress()))
                                             .toByteArray();
 
-                    AionTransaction tx =
-                            new AionTransaction(
+                    ITransaction tx = ac.getTransactionFactory().createTransaction(
                                     nonce,
                                     from,
                                     null,
@@ -518,7 +517,7 @@ public abstract class ApiAion extends Api {
                                     _params.getData(),
                                     _params.getNrg(),
                                     _params.getNrgPrice());
-                    tx.sign(key);
+                    ((AbstractTransaction)tx).sign(key);
 
                     pendingState.addPendingTransaction(tx);
 
@@ -552,9 +551,6 @@ public abstract class ApiAion extends Api {
         return this.ac.getRepository().getNonce(_address);
     }
 
-    /**
-     *  TODO: refactor to be more generic or move to concrete Api implementation
-     */
     protected byte[] sendTransaction(ArgTxCall _params) {
 
         Address from = _params.getFrom();
@@ -580,15 +576,13 @@ public abstract class ApiAion extends Api {
                                         .bestPendingStateNonce(Address.wrap(key.getAddress()))
                                         .toByteArray();
 
-                AionTransaction tx =
-                        new AionTransaction(
-                                nonce,
+                ITransaction tx = ac.getTransactionFactory().createTransaction(nonce,
                                 _params.getTo(),
                                 _params.getValue().toByteArray(),
                                 _params.getData(),
                                 _params.getNrg(),
                                 _params.getNrgPrice());
-                tx.sign(key);
+                ((AbstractTransaction) tx).sign(key);
 
                 pendingState.addPendingTransaction(tx);
 
@@ -608,7 +602,7 @@ public abstract class ApiAion extends Api {
             throw new NullPointerException();
         }
 
-        AionTransaction tx = new AionTransaction(signedTx);
+        ITransaction tx = this.ac.getTransactionFactory().createTransaction(signedTx);
         pendingState.addPendingTransaction(tx);
         return tx.getHash();
     }
@@ -712,15 +706,12 @@ public abstract class ApiAion extends Api {
     }
 
     // Returns a fully initialized NrgOracle object.
-    /**
-     *  TODO: Maybe all references to the NrgOracle should be moved to an Aion0 implementation
-     */
-    protected void initNrgOracle(IAionChain _ac) {
+    protected void initNrgOracle(IGenericAionChain aionChain) {
         if (NRG_ORACLE != null) {
             return;
         }
 
-        IAionBlockchain bc =_ac.getBlockchain();
+        IBlockchain blockchain = aionChain.getBlockchain();
         long nrgPriceDefault = CfgAion.inst().getApi().getNrg().getNrgPriceDefault();
         long nrgPriceMax = CfgAion.inst().getApi().getNrg().getNrgPriceMax();
 
@@ -728,7 +719,7 @@ public abstract class ApiAion extends Api {
         if (CfgAion.inst().getApi().getNrg().isOracleEnabled())
             oracleStrategy = NrgOracle.Strategy.BLK_PRICE;
 
-        NRG_ORACLE = new NrgOracle(bc, nrgPriceDefault, nrgPriceMax, oracleStrategy);
+        NRG_ORACLE = new NrgOracle(blockchain, nrgPriceDefault, nrgPriceMax, oracleStrategy);
     }
 
     protected long getRecommendedNrgPrice() {
@@ -744,6 +735,7 @@ public abstract class ApiAion extends Api {
     }
 
     protected long getDefaultNrgLimit() {
+        //TODO: this should be in the config
         return 2_000_000L;
     }
 

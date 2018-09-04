@@ -206,9 +206,7 @@ public class ApiWeb3Aion extends ApiAion {
         isFilterEnabled = CfgAion.inst().getApi().getRpc().isFiltersEnabled();
         isSeedMode = CfgAion.inst().getConsensus().isSeed();
 
-        //TODO: do we really need an NRG oracle for web3 impl?
-        if (_ac instanceof IChainInstancePOW)
-            initNrgOracle((IChainInstancePOW)_ac);
+        initNrgOracle(_ac);
 
         if (isFilterEnabled) {
             evtMgr = this.ac.getAionHub().getEventMgr();
@@ -696,7 +694,7 @@ public class ApiWeb3Aion extends ApiAion {
             return new RpcMsg(null, RpcError.INVALID_PARAMS, "Invalid block id provided.");
 
         ITransaction tx =
-                new AionTransaction(
+                this.ac.getTransactionFactory().createTransaction(
                         txParams.getNonce().toByteArray(),
                         txParams.getTo(),
                         txParams.getValue().toByteArray(),

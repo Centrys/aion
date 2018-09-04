@@ -21,6 +21,7 @@
         <pathelement location="${dir.lib}/logback-classic-1.2.3.jar"/>
         <pathelement location="${dir.lib}/logback-core-1.2.3.jar"/>
         <pathelement location="${dir.lib}/libnsc.jar"/>
+        <pathelement location="${dir.lib}/truth-0.42.jar"/>
         <pathelement location="${dir.mod}/modLogger.jar"/>
         <pathelement location="${dir.mod}/modAion.jar"/>
         <pathelement location="${dir.mod}/modCrypto.jar"/>
