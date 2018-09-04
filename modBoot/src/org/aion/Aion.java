@@ -26,9 +26,9 @@ package org.aion;
 import org.aion.crypto.ECKeyFac;
 import org.aion.crypto.HashUtil;
 import org.aion.evtmgr.EventMgrModule;
+import org.aion.generic.IBlockchainEngine;
 import org.aion.log.AionLoggerFactory;
 import org.aion.log.LogEnum;
-import org.aion.mcf.config.CfgConsensus;
 import org.aion.mcf.config.CfgSsl;
 import org.aion.zero.impl.cli.Cli;
 import org.aion.zero.impl.config.CfgAion;
@@ -117,9 +117,8 @@ public class Aion {
 
         genLog.info(logo);
 
-        if (cfg.getConsensusType().equals(CfgConsensus.ConsensusType.POW)) {
-            AionPOWChainRunner.start(cfg, sslPass, genLog);
-        }
+        IBlockchainEngine blockchainEngine = BlockchainEngineFactory.create(cfg, genLog, sslPass);
+        blockchainEngine.start();
     }
 
     private static char[] getSslPassword(CfgAion cfg) {

@@ -1,25 +1,3 @@
-/*
- * Copyright (c) 2017-2018 Aion foundation.
- *
- *     This file is part of the aion network project.
- *
- *     The aion network project is free software: you can redistribute it
- *     and/or modify it under the terms of the GNU General Public License
- *     as published by the Free Software Foundation, either version 3 of
- *     the License, or any later version.
- *
- *     The aion network project is distributed in the hope that it will
- *     be useful, but WITHOUT ANY WARRANTY; without even the implied
- *     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *     See the GNU General Public License for more details.
- *
- *     You should have received a copy of the GNU General Public License
- *     along with the aion network project source files.
- *     If not, see <https://www.gnu.org/licenses/>.
- *
- * Contributors:
- *     Centrys Inc. <https://centrys.io>
- */
 package org.aion;
 
 import org.aion.api.server.http.RpcServer;
@@ -31,21 +9,55 @@ import org.aion.api.server.pb.ApiAion0;
 import org.aion.api.server.pb.IHdlr;
 import org.aion.api.server.zmq.HdlrZmq;
 import org.aion.api.server.zmq.ProtocolProcessor;
+import org.aion.engine.impl.Aion0BlockchainEngine;
+import org.aion.generic.IBlockchainEngine;
 import org.aion.mcf.config.CfgApiRpc;
 import org.aion.mcf.config.CfgSsl;
 import org.aion.mcf.mine.IMineRunner;
-import org.aion.zero.impl.blockchain.AionFactory;
+import org.aion.zero.impl.blockchain.AionImpl;
 import org.aion.zero.impl.blockchain.IChainInstancePOW;
 import org.aion.zero.impl.config.CfgAion;
 import org.slf4j.Logger;
 
 import java.util.function.Consumer;
 
-public class AionPOWChainRunner {
+public class BlockchainEngineFactory {
 
-    public static void start(CfgAion cfg, final char[] sslPass, Logger genLog) {
-        IChainInstancePOW ac = AionFactory.create();
+    public static IBlockchainEngine create(CfgAion cfg, Logger genLog, char[] sslPass) {
+        switch (cfg.getConsensus().getConsensusType()) {
+            case POW:
+                IChainInstancePOW ac = AionImpl.inst();
+                ProtocolProcessor protocolProcessor = getAion0ProtocolProcessor(ac, cfg);
+                Thread zmqThread = startAion0Api(protocolProcessor, cfg);
+                IMineRunner miner = startAion0Mining(ac, cfg);
+                RpcServer rpcServer = startAion0RpcServer(ac, cfg, genLog, sslPass);
+                startShutdownThread(ac, genLog, zmqThread, miner, protocolProcessor, rpcServer);
 
+                return new Aion0BlockchainEngine(ac);
+            default:
+                return null;
+        }
+    }
+
+    private static ProtocolProcessor getAion0ProtocolProcessor(IChainInstancePOW ac, CfgAion cfg) {
+        ProtocolProcessor processor = null;
+        if (cfg.getApi().getZmq().getActive()) {
+            IHdlr handler = new HdlrZmq(new ApiAion0(ac));
+            processor = new ProtocolProcessor(handler, cfg.getApi().getZmq());
+        }
+        return processor;
+    }
+
+    private static Thread startAion0Api(ProtocolProcessor protocolProcessor, CfgAion cfg) {
+        Thread zmqThread = null;
+        if (cfg.getApi().getZmq().getActive()) {
+            zmqThread = new Thread(protocolProcessor, "zmq-api");
+            zmqThread.start();
+        }
+        return zmqThread;
+    }
+
+    private static IMineRunner startAion0Mining(IChainInstancePOW ac, CfgAion cfg) {
         IMineRunner nm = null;
 
         if (!cfg.getConsensus().isSeed()) {
@@ -56,38 +68,10 @@ public class AionPOWChainRunner {
             nm.delayedStartMining(10);
         }
 
-        /*
-         * Create JMX server and register in-flight config receiver MBean.  Commenting out for now
-         * because not using it yet.
-         */
-//        InFlightConfigReceiver inFlightConfigReceiver = new InFlightConfigReceiver(
-//                cfg, new DynamicConfigKeyRegistry());
-//        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-//        ObjectName objectName = null;
-//        try {
-//            objectName = new ObjectName(InFlightConfigReceiver.DEFAULT_JMX_OBJECT_NAME);
-//            server.registerMBean(inFlightConfigReceiver, objectName);
-//        } catch (MalformedObjectNameException
-//                | NotCompliantMBeanException
-//                | InstanceAlreadyExistsException
-//                | MBeanRegistrationException ex) {
-//            genLog.error(
-//                    "Failed to initialize JMX server.  In-flight configuration changes will not be available.",
-//                    ex);
-//        }
+        return nm;
+    }
 
-        /*
-         * Start Threads.
-         */
-        Thread zmqThread = null;
-        ProtocolProcessor processor = null;
-        if (cfg.getApi().getZmq().getActive()) {
-            IHdlr handler = new HdlrZmq(new ApiAion0(ac));
-            processor = new ProtocolProcessor(handler, cfg.getApi().getZmq());
-            zmqThread = new Thread(processor, "zmq-api");
-            zmqThread.start();
-        }
-
+    private static RpcServer startAion0RpcServer(IChainInstancePOW ac, CfgAion cfg, Logger genLog, char[] sslPass) {
         RpcServer rpcServer = null;
         if(cfg.getApi().getRpc().getActive()) {
             CfgApiRpc rpcCfg =  cfg.getApi().getRpc();
@@ -108,14 +92,14 @@ public class AionPOWChainRunner {
             try {
                 switch (rpcVendor) {
                     case NANO: {
-                        NanoRpcServer.Builder rpcBuilder = new NanoRpcServer.Builder();
+                        NanoRpcServer.Builder rpcBuilder = new NanoRpcServer.Builder().withAionChain(ac);
                         commonRpcConfig.accept(rpcBuilder);
                         rpcServer = rpcBuilder.build();
                         break;
                     }
                     case UNDERTOW:
                     default: {
-                        UndertowRpcServer.Builder rpcBuilder = new UndertowRpcServer.Builder();
+                        UndertowRpcServer.Builder rpcBuilder = new UndertowRpcServer.Builder().withAionChain(ac);
                         commonRpcConfig.accept(rpcBuilder);
                         rpcServer = rpcBuilder.build();
                         break;
@@ -131,11 +115,14 @@ public class AionPOWChainRunner {
 
             rpcServer.start();
         }
+        return rpcServer;
+    }
 
-        /*
-         * This is a hack, but used to let us pass zmqThread into thread
-         * Shutdown hook for Ctrl+C
-         */
+    /**
+     *  TODO: I would see this passed as a closure/Interface to `IBlockchainEngine` and structure (shutdown) hooks in a dedicated pacakge.
+     */
+    private static void startShutdownThread(IChainInstancePOW ac, Logger genLog, Thread zmqThread, IMineRunner miner,
+                                            ProtocolProcessor protocolProcessor, RpcServer rpcServer) {
         class ShutdownThreadHolder {
 
             private final Thread zmqThread;
@@ -151,7 +138,7 @@ public class AionPOWChainRunner {
             }
         }
 
-        ShutdownThreadHolder holder = new ShutdownThreadHolder(zmqThread, nm, processor, rpcServer);
+        ShutdownThreadHolder holder = new ShutdownThreadHolder(zmqThread, miner, protocolProcessor, rpcServer);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 
@@ -201,5 +188,4 @@ public class AionPOWChainRunner {
 
         }, "shutdown"));
     }
-
 }

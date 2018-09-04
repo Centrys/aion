@@ -1,5 +1,7 @@
 package org.aion.api.server.http;
 
+import org.aion.generic.IGenericAionChain;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,6 +19,7 @@ public abstract class RpcServerBuilder<T extends RpcServerBuilder<T>> {
     // but I personally like to avoid the visual clutter of accessors
     String hostName;
     Integer port;
+    protected IGenericAionChain aionChain;
 
     boolean corsEnabled = false;
     String corsOrigin = "*";
@@ -68,6 +71,11 @@ public abstract class RpcServerBuilder<T extends RpcServerBuilder<T>> {
     public T setWorkerPoolSize(Integer workerPoolSize) {
         this.workerPoolSize = workerPoolSize;
 
+        return self();
+    }
+
+    public T withAionChain(IGenericAionChain aionChain) {
+        this.aionChain = aionChain;
         return self();
     }
 
